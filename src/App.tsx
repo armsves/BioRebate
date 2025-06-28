@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import "./App.css";
 import CredentialIssuance from "./components/issuance/CredentialIssuance";
 import CredentialVerification from "./components/verification/CredentialVerification";
+import Home from "./pages/Home";
+import Discounts from "./pages/Discounts";
+import Upload from "./pages/Upload";
+import PharmacyDashboard from "./pages/PharmacyDashboard";
 import NavBarLogin from "./components/NavBarLogin";
 import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 import { getEnvironmentConfig, type EnvironmentConfig } from "./config/environments";
@@ -25,6 +29,14 @@ const FlowTitle = () => {
     return <span className="text-brand-600">Issuance</span>;
   } else if (location.pathname === "/verify") {
     return <span className="text-verify-600">Verification</span>;
+  } else if (location.pathname === "/home") {
+    return <span className="text-blue-600">BioRebate</span>;
+  } else if (location.pathname === "/discounts") {
+    return <span className="text-green-600">My Discounts</span>;
+  } else if (location.pathname === "/upload") {
+    return <span className="text-purple-600">Upload Health Records</span>;
+  } else if (location.pathname === "/pharmacy") {
+    return <span className="text-orange-600">Pharmacy Dashboard</span>;
   }
 
   return <span>AIR Credential Demo</span>;
@@ -37,7 +49,7 @@ const getDefaultPartnerId = (pathname: string): string => {
   } else if (pathname === "/verify") {
     return VERIFIER_PARTNER_ID;
   }
-  return ISSUER_PARTNER_ID; // Default to issuer for root route
+  return ISSUER_PARTNER_ID; // Default to issuer for all other routes
 };
 
 function AppRoutes({
@@ -83,6 +95,14 @@ function AppRoutes({
           ? "bg-gradient-to-br from-blue-50 to-brand-100"
           : location.pathname.startsWith("/verify")
           ? "bg-gradient-to-br from-verify-50 to-verify-200"
+          : location.pathname === "/home"
+          ? "bg-gradient-to-br from-blue-50 to-blue-100"
+          : location.pathname === "/discounts"
+          ? "bg-gradient-to-br from-green-50 to-green-100"
+          : location.pathname === "/upload"
+          ? "bg-gradient-to-br from-purple-50 to-purple-100"
+          : location.pathname === "/pharmacy"
+          ? "bg-gradient-to-br from-orange-50 to-orange-100"
           : "bg-gradient-to-br from-gray-50 to-gray-200")
       }
     >
@@ -106,12 +126,36 @@ function AppRoutes({
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-8 w-full sm:w-auto">
-              <nav className="flex flex-row space-x-2 sm:space-x-8 w-full sm:w-auto">
+              <nav className="flex flex-row space-x-2 sm:space-x-4 w-full sm:w-auto overflow-x-auto">
+                <a
+                  href="/home"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                >
+                  Home
+                </a>
+                <a
+                  href="/discounts"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                >
+                  Discounts
+                </a>
+                <a
+                  href="/upload"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                >
+                  Upload
+                </a>
+                <a
+                  href="/pharmacy"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                >
+                  Pharmacy
+                </a>
                 <a
                   href="/issue"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
                 >
                   Issuance
                 </a>
@@ -119,7 +163,7 @@ function AppRoutes({
                   href="/verify"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
                 >
                   Verification
                 </a>
@@ -145,8 +189,14 @@ function AppRoutes({
       {/* Main Content */}
       <main className="flex-1">
         <Routes>
-          {/* Redirect root to /issue */}
-          <Route path="/" element={<Navigate to="/issue" replace />} />
+          {/* Redirect root to /home */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
+
+          {/* BioRebate Pages */}
+          <Route path="/home" element={<Home />} />
+          <Route path="/discounts" element={<Discounts />} />
+          <Route path="/upload" element={<Upload />} />
+          <Route path="/pharmacy" element={<PharmacyDashboard />} />
 
           {/* Issuance Flow */}
           <Route
