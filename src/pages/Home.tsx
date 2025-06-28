@@ -1,94 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import SupplementCard from '../components/SupplementCard';
-import { Search, Filter, TrendingUp } from 'lucide-react';
+import { Search, Filter, TrendingUp, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { useProducts } from '../hooks/useProducts';
 
 export default function Home() {
-  const supplements = [
-    {
-      id: '1',
-      name: 'Premium Whey Protein Isolate 5lb',
-      brand: 'OptimalNutrition',
-      originalPrice: 89.99,
-      discountPrice: 54.99,
-      discountPercentage: 39,
-      rating: 4.8,
-      reviewCount: 2341,
-      imageUrl: 'https://images.pexels.com/photos/4099238/pexels-photo-4099238.jpeg?auto=compress&cs=tinysrgb&w=500',
-      timeLeft: '2d 5h',
-      soldCount: 1247,
-      description: 'Fast-absorbing whey protein isolate with 25g protein per serving. Perfect for post-workout recovery.',
-    },
-    {
-      id: '2',
-      name: 'Organic Multivitamin Complex',
-      brand: 'NaturePlus',
-      originalPrice: 49.99,
-      discountPrice: 29.99,
-      discountPercentage: 40,
-      rating: 4.6,
-      reviewCount: 856,
-      imageUrl: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=500',
-      timeLeft: '1d 12h',
-      soldCount: 623,
-      description: 'Complete daily multivitamin with organic whole food ingredients and essential minerals.',
-    },
-    {
-      id: '3',
-      name: 'Creatine Monohydrate 1kg',
-      brand: 'StrengthMax',
-      originalPrice: 39.99,
-      discountPrice: 24.99,
-      discountPercentage: 38,
-      rating: 4.9,
-      reviewCount: 1892,
-      imageUrl: 'https://images.pexels.com/photos/4099238/pexels-photo-4099238.jpeg?auto=compress&cs=tinysrgb&w=500',
-      timeLeft: '3d 8h',
-      soldCount: 2156,
-      description: 'Pure creatine monohydrate powder for enhanced strength, power, and muscle growth.',
-    },
-    {
-      id: '4',
-      name: 'Omega-3 Fish Oil 180 Capsules',
-      brand: 'OceanLife',
-      originalPrice: 34.99,
-      discountPrice: 19.99,
-      discountPercentage: 43,
-      rating: 4.7,
-      reviewCount: 1234,
-      imageUrl: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=500',
-      timeLeft: '4d 15h',
-      soldCount: 892,
-      description: 'High-quality fish oil with EPA and DHA for heart and brain health support.',
-    },
-    {
-      id: '5',
-      name: 'Pre-Workout Energy Boost',
-      brand: 'PowerFuel',
-      originalPrice: 44.99,
-      discountPrice: 27.99,
-      discountPercentage: 38,
-      rating: 4.5,
-      reviewCount: 967,
-      imageUrl: 'https://images.pexels.com/photos/4099238/pexels-photo-4099238.jpeg?auto=compress&cs=tinysrgb&w=500',
-      timeLeft: '2d 3h',
-      soldCount: 743,
-      description: 'Clean energy pre-workout with natural caffeine, beta-alanine, and performance enhancers.',
-    },
-    {
-      id: '6',
-      name: 'Collagen Peptides Powder',
-      brand: 'VitalBeauty',
-      originalPrice: 59.99,
-      discountPrice: 35.99,
-      discountPercentage: 40,
-      rating: 4.8,
-      reviewCount: 1456,
-      imageUrl: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=500',
-      timeLeft: '5d 7h',
-      soldCount: 1089,
-      description: 'Hydrolyzed collagen peptides for skin, hair, nail, and joint health support.',
-    },
-  ];
+  const navigate = useNavigate();
+  const { supplements, loading, error, refetch } = useProducts();
 
   const categories = [
     'Protein & Fitness',
@@ -115,8 +33,11 @@ export default function Home() {
             <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               Start Shopping
             </button>
-            <button className="bg-blue-500 border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
-              Upload Health Records
+            <button 
+              onClick={() => navigate('/upload')}
+              className="bg-blue-500 border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+            >
+              Upload
             </button>
           </div>
         </div>
@@ -164,15 +85,67 @@ export default function Home() {
 
       {/* Trending Section */}
       <div className="mb-8">
-        <div className="flex items-center space-x-2 mb-4">
-          <TrendingUp className="h-6 w-6 text-blue-600" />
-          <h2 className="text-2xl font-bold text-gray-900">Trending Deals</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <TrendingUp className="h-6 w-6 text-blue-600" />
+            <h2 className="text-2xl font-bold text-gray-900">Trending Deals</h2>
+          </div>
+          {error && (
+            <button
+              onClick={refetch}
+              className="flex items-center space-x-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Retry</span>
+            </button>
+          )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {supplements.map((supplement) => (
-            <SupplementCard key={supplement.id} {...supplement} />
-          ))}
-        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center space-x-3">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              <span className="text-gray-600">Loading products...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load products</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <button
+                onClick={refetch}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Products Grid */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {supplements.map((supplement) => (
+              <SupplementCard key={supplement.id} {...supplement} />
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && supplements.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-500">
+              <h3 className="text-lg font-semibold mb-2">No products found</h3>
+              <p>Check back later for new deals!</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Stats Section */}

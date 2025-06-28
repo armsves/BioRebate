@@ -13,7 +13,6 @@ interface SupplementCardProps {
   imageUrl: string;
   timeLeft: string;
   soldCount: number;
-  description: string;
 }
 
 export default function SupplementCard({
@@ -27,7 +26,6 @@ export default function SupplementCard({
   imageUrl,
   timeLeft,
   soldCount,
-  description,
 }: SupplementCardProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden group">
@@ -47,12 +45,10 @@ export default function SupplementCard({
       </div>
 
       <div className="p-4">
-        <div className="mb-2">
+        <div className="mb-3">
           <h3 className="font-semibold text-gray-900 text-lg line-clamp-2">{name}</h3>
           <p className="text-sm text-gray-600">{brand}</p>
         </div>
-
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{description}</p>
 
         <div className="flex items-center space-x-2 mb-3">
           <div className="flex items-center">

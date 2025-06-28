@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
-import { Upload as UploadIcon, FileText, CheckCircle, Gift, ArrowRight, AlertTriangle, TrendingDown, Activity } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowRight, FileText, Gift, TrendingDown, Upload as UploadIcon, Award } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { AirCredentialWidget, type ClaimRequest, type JsonDocumentObject, type Language } from "@mocanetwork/air-credential-sdk";
+import "@mocanetwork/air-credential-sdk/dist/style.css";
+import { AirService, BUILD_ENV } from "@mocanetwork/airkit";
+import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
+import type { EnvironmentConfig } from "../config/environments";
 
 interface Deficiency {
   name: string;
@@ -23,12 +28,77 @@ interface Discount {
   deficiencyMatch: string;
 }
 
-export default function Upload() {
+interface UploadProps {
+  airService?: AirService | null;
+  isLoggedIn?: boolean;
+  airKitBuildEnv?: BUILD_ENV_TYPE;
+  partnerId?: string;
+  environmentConfig?: EnvironmentConfig;
+}
+
+// Helper function to get issuer auth token
+const getIssuerAuthToken = async (issuerDid: string, apiKey: string, apiUrl: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${apiUrl}/issuer/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "*/*",
+        "X-Test": "true",
+      },
+      body: JSON.stringify({
+        issuerDid: issuerDid,
+        authToken: apiKey,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API call failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.code === 80000000 && data.data && data.data.token) {
+      return data.data.token;
+    } else {
+      console.error("Failed to get issuer auth token from API:", data.msg || "Unknown error");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching issuer auth token:", error);
+    return null;
+  }
+};
+
+export default function Upload({
+  airService = null,
+  isLoggedIn = false,
+  airKitBuildEnv = BUILD_ENV.SANDBOX,
+  partnerId = "",
+  environmentConfig = {
+    apiUrl: "https://api-sandbox.airprotocol.com",
+    widgetUrl: "https://widget-sandbox.airprotocol.com"
+  }
+}: UploadProps = {}) {
   const [uploadStep, setUploadStep] = useState<'upload' | 'processing' | 'analyzing' | 'complete'>('upload');
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [detectedDeficiencies, setDetectedDeficiencies] = useState<Deficiency[]>([]);
   const [personalizedDiscounts, setPersonalizedDiscounts] = useState<Discount[]>([]);
+  
+  // Credential issuance states
+  const [showCredentialSection, setShowCredentialSection] = useState(false);
+  const [isIssuanceLoading, setIsIssuanceLoading] = useState(false);
+  const [isIssuanceSuccess, setIsIssuanceSuccess] = useState(false);
+  const [issuanceError, setIssuanceError] = useState<string | null>(null);
+  const widgetRef = useRef<AirCredentialWidget | null>(null);
+  
+  // Configuration for credential issuance
+  const [config] = useState({
+    issuerDid: import.meta.env.VITE_ISSUER_DID || "did:example:issuer123",
+    apiKey: import.meta.env.VITE_ISSUER_API_KEY || "your-issuer-api-key",
+    credentialId: import.meta.env.VITE_CREDENTIAL_ID || "c21hc0g0joevn0015479aK",
+  });
 
   const mockDeficiencies: Deficiency[] = [
     {
@@ -173,6 +243,110 @@ export default function Upload() {
     }
   };
 
+  // Convert deficiencies to credential subject
+  const convertDeficienciesToCredentialSubject = (): JsonDocumentObject => {
+    const subject: JsonDocumentObject = {
+      // Add basic health record info
+      recordDate: new Date().toISOString().split('T')[0],
+      analysisType: "Nutritional Deficiency Analysis",
+      patientId: "anonymous", // In real app, this would be user ID
+    };
+
+    // Add deficiency data
+    detectedDeficiencies.forEach((deficiency, index) => {
+      const prefix = `deficiency_${index + 1}`;
+      subject[`${prefix}_name`] = deficiency.name;
+      subject[`${prefix}_level`] = deficiency.level;
+      subject[`${prefix}_value`] = deficiency.value;
+      subject[`${prefix}_severity`] = deficiency.severity;
+    });
+
+    // Add summary
+    subject.total_deficiencies = detectedDeficiencies.length;
+    subject.severe_count = detectedDeficiencies.filter(d => d.severity === 'severe').length;
+
+    return subject;
+  };
+
+  const generateWidget = async () => {
+    try {
+      const fetchedIssuerAuthToken = await getIssuerAuthToken(config.issuerDid, config.apiKey, environmentConfig.apiUrl);
+
+      if (!fetchedIssuerAuthToken) {
+        setIssuanceError("Failed to fetch issuer authentication token. Please check your DID and API Key.");
+        setIsIssuanceLoading(false);
+        return;
+      }
+
+      const credentialSubject = convertDeficienciesToCredentialSubject();
+
+      const claimRequest: ClaimRequest = {
+        process: "Issue",
+        issuerDid: config.issuerDid,
+        issuerAuth: fetchedIssuerAuthToken,
+        credentialId: config.credentialId,
+        credentialSubject: credentialSubject,
+      };
+
+      const rp = await airService?.goToPartner(environmentConfig.widgetUrl).catch((err) => {
+        console.error("Error getting URL with token:", err);
+      });
+
+      if (!rp?.urlWithToken) {
+        console.warn("Failed to get URL with token. Please check your partner ID.");
+        setIssuanceError("Failed to get URL with token. Please check your partner ID.");
+        setIsIssuanceLoading(false);
+        return;
+      }
+
+      widgetRef.current = new AirCredentialWidget(claimRequest, partnerId, {
+        endpoint: rp?.urlWithToken,
+        airKitBuildEnv: airKitBuildEnv || BUILD_ENV.STAGING,
+        theme: "light",
+        locale: "en" as Language,
+      });
+
+      widgetRef.current.on("issueCompleted", () => {
+        setIsIssuanceSuccess(true);
+        setIsIssuanceLoading(false);
+        console.log("Health credential issuance completed successfully!");
+      });
+
+      widgetRef.current.on("close", () => {
+        setIsIssuanceLoading(false);
+        console.log("Widget closed");
+      });
+    } catch (err) {
+      setIssuanceError(err instanceof Error ? err.message : "Failed to create widget");
+      setIsIssuanceLoading(false);
+    }
+  };
+
+  const handleIssueHealthCredential = async () => {
+    setIsIssuanceLoading(true);
+    setIssuanceError(null);
+    setIsIssuanceSuccess(false);
+
+    try {
+      await generateWidget();
+      if (widgetRef.current) {
+        widgetRef.current.launch();
+      }
+    } catch (err) {
+      setIssuanceError(err instanceof Error ? err.message : "An error occurred");
+      setIsIssuanceLoading(false);
+    }
+  };
+
+  // Clean up widget on unmount
+  useEffect(() => {
+    return () => {
+      if (widgetRef.current) {
+        widgetRef.current.destroy();
+      }
+    };
+  }, []);
+
   const benefits = [
     {
       title: 'AI Health Analysis',
@@ -229,12 +403,28 @@ export default function Upload() {
                     className="hidden"
                     id="file-upload"
                   />
-                  <label
-                    htmlFor="file-upload"
-                    className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 cursor-pointer inline-block transition-colors"
-                  >
-                    Choose File
-                  </label>
+                  <div className="flex flex-col sm:flex-row gap-3 items-center">
+                    <label
+                      htmlFor="file-upload"
+                      className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 cursor-pointer inline-block transition-colors"
+                    >
+                      Choose File
+                    </label>
+                    <span className="text-gray-500 text-sm">or</span>
+                    <button
+                      onClick={() => {
+                        // Create a mock file for testing
+                        const mockFile = new File(['mock health data'], 'health-report.pdf', {
+                          type: 'application/pdf'
+                        });
+                        setUploadedFile(mockFile);
+                        handleFileUpload(mockFile);
+                      }}
+                      className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+                    >
+                      Upload
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -348,6 +538,242 @@ export default function Upload() {
                 </div>
               </div>
 
+              {/* Health Credential Issuance Section */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Award className="h-6 w-6 text-purple-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">Get Your Health Credential</h3>
+                </div>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+                  <p className="text-purple-800 text-sm mb-3">
+                    Create a verifiable digital credential of your health analysis. This credential can be used to prove your 
+                    health status to partners, insurance providers, or health apps while maintaining your privacy.
+                  </p>
+                </div>
+
+                {/* Credential Subject Preview */}
+                <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Credential Subject Preview</h4>
+                  <p className="text-sm text-gray-600 mb-4">The following data will be included in your verifiable credential:</p>
+                  
+                  <div className="space-y-4">
+                    {/* Basic Health Record Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="recordDate"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>String</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value={new Date().toISOString().split('T')[0]}
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="analysisType"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>String</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value="Nutritional Deficiency Analysis"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="total_deficiencies"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>Number</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value={detectedDeficiencies.length.toString()}
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="severe_count"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>Number</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value={detectedDeficiencies.filter(d => d.severity === 'severe').length.toString()}
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Deficiency Details Preview */}
+                    {detectedDeficiencies.slice(0, 2).map((deficiency, index) => (
+                      <div key={index} className="border-t pt-4">
+                        <h5 className="text-sm font-medium text-gray-800 mb-3">Deficiency {index + 1} Sample Data</h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div className="bg-white rounded-lg p-2 border">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Field</label>
+                              <input
+                                type="text"
+                                value={`deficiency_${index + 1}_name`}
+                                readOnly
+                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
+                              />
+                            </div>
+                            <div className="bg-white rounded-lg p-2 border">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                              <select disabled className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50">
+                                <option>String</option>
+                              </select>
+                            </div>
+                            <div className="bg-white rounded-lg p-2 border">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                              <input
+                                type="text"
+                                value={deficiency.name}
+                                readOnly
+                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div className="bg-white rounded-lg p-2 border">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Field</label>
+                              <input
+                                type="text"
+                                value={`deficiency_${index + 1}_severity`}
+                                readOnly
+                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
+                              />
+                            </div>
+                            <div className="bg-white rounded-lg p-2 border">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                              <select disabled className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50">
+                                <option>String</option>
+                              </select>
+                            </div>
+                            <div className="bg-white rounded-lg p-2 border">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                              <input
+                                type="text"
+                                value={deficiency.severity}
+                                readOnly
+                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {detectedDeficiencies.length > 2 && (
+                      <div className="text-center text-sm text-gray-500 py-2">
+                        ... and {detectedDeficiencies.length - 2} more deficiency records
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Credential Status Messages */}
+                {issuanceError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-red-800 text-sm">{issuanceError}</p>
+                  </div>
+                )}
+
+                {isIssuanceSuccess && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                    <p className="text-green-800 text-sm">✅ Health credential issued successfully!</p>
+                  </div>
+                )}
+
+                {/* Credential Issuance Button */}
+                <button
+                  onClick={handleIssueHealthCredential}
+                  disabled={isIssuanceLoading || !isLoggedIn}
+                  className="w-full bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+                >
+                  {isIssuanceLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Issuing Credential...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Award className="h-4 w-4" />
+                      <span>Issue Health Credential</span>
+                    </>
+                  )}
+                </button>
+
+                {!isLoggedIn && (
+                  <p className="text-sm text-gray-500 mt-2 text-center">
+                    Please log in using the wallet connection to issue credentials
+                  </p>
+                )}
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
                   <span>View All My Discounts</span>
@@ -359,6 +785,9 @@ export default function Upload() {
                     setUploadedFile(null);
                     setDetectedDeficiencies([]);
                     setPersonalizedDiscounts([]);
+                    setShowCredentialSection(false);
+                    setIsIssuanceSuccess(false);
+                    setIssuanceError(null);
                   }}
                   className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >

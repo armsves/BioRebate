@@ -34,7 +34,7 @@ const FlowTitle = () => {
   } else if (location.pathname === "/discounts") {
     return <span className="text-green-600">My Discounts</span>;
   } else if (location.pathname === "/upload") {
-    return <span className="text-purple-600">Upload Health Records</span>;
+    return <span className="text-purple-600">Upload</span>;
   } else if (location.pathname === "/pharmacy") {
     return <span className="text-orange-600">Pharmacy Dashboard</span>;
   }
@@ -195,7 +195,18 @@ function AppRoutes({
           {/* BioRebate Pages */}
           <Route path="/home" element={<Home />} />
           <Route path="/discounts" element={<Discounts />} />
-          <Route path="/upload" element={<Upload />} />
+          <Route 
+            path="/upload" 
+            element={
+              <Upload 
+                airService={airService}
+                isLoggedIn={isLoggedIn}
+                airKitBuildEnv={currentEnv}
+                partnerId={partnerId}
+                environmentConfig={environmentConfig}
+              />
+            } 
+          />
           <Route path="/pharmacy" element={<PharmacyDashboard />} />
 
           {/* Issuance Flow */}
