@@ -501,15 +501,16 @@ export default function Upload({
   // Convert deficiencies to credential subject using exact medical schema
   const convertDeficienciesToCredentialSubject = (): JsonDocumentObject => {
     // Extract demographic data from PDF if available
-    const age = pdfParseResult?.demographics?.age || 35;
-    const gender = pdfParseResult?.demographics?.gender === 'Male' ? 1 : 0; // 1 = Male, 0 = Female
+    const age = Math.floor(pdfParseResult?.demographics?.age || 35);
+    const gender = pdfParseResult?.demographics?.gender === 'Male' ? 1 : 2; // 1 = Male, 2 = Female
 
     // Extract biomarker values from parsed data or use default values
     const getVitaminValue = (vitaminName: string, defaultValue: number): number => {
       const biomarker = pdfParseResult?.biomarkers?.find(b => 
         b.name.toLowerCase().includes(vitaminName.toLowerCase())
       );
-      return biomarker?.value ?? defaultValue; // Use nullish coalescing to handle 0 values
+      const value = biomarker?.value ?? defaultValue; // Use nullish coalescing to handle 0 values
+      return Math.floor(value); // Convert to integer
     };
 
     const subject: JsonDocumentObject = {
@@ -521,7 +522,7 @@ export default function Upload({
       "hemoglobin-field": getVitaminValue('hemoglobin', 13), // number
       "vitamin-B9-field": getVitaminValue('folate', 8), // number (B9 is folate)
       "vitamin-D-field": getVitaminValue('vitamin D', 25), // number
-      "date-creation-field": new Date().toISOString().split('T')[0] // string
+      "date-creation-field": "2025-06-29" // string - test with specific date format
     };
 
     console.log("Subject:", subject);
@@ -917,7 +918,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={pdfParseResult?.demographics?.age?.toString() || "35"}
+                          value={Math.floor(pdfParseResult?.demographics?.age || 35).toString()}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -945,7 +946,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={pdfParseResult?.demographics?.gender === 'Male' ? "1" : "0"}
+                          value={pdfParseResult?.demographics?.gender === 'Male' ? "1" : "2"}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -973,7 +974,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={new Date().toISOString().split('T')[0]}
+                          value="2025-06-29"
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -1001,7 +1002,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('b12'))?.value?.toString() || "300"}
+                          value={Math.floor(pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('b12'))?.value || 300).toString()}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -1029,7 +1030,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('ferritin'))?.value?.toString() || "50"}
+                          value={Math.floor(pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('ferritin'))?.value || 50).toString()}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -1057,7 +1058,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('hemoglobin'))?.value?.toString() || "13.5"}
+                          value={Math.floor(pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('hemoglobin'))?.value || 13).toString()}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -1085,7 +1086,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('folate'))?.value?.toString() || "8.5"}
+                          value={Math.floor(pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('folate'))?.value || 8).toString()}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -1113,7 +1114,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('vitamin d'))?.value?.toString() || "25"}
+                          value={Math.floor(pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('vitamin d'))?.value || 25).toString()}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
