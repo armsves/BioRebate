@@ -32,12 +32,14 @@ export default function CheckoutButton({
     try {
       console.log('🛒 Starting checkout with items:', cartItems);
       
-      // Match the working curl command exactly - simple payload with only items
+      // Prepare payload with items and redirect URLs
       const payload = {
-        items: cartItems
+        items: cartItems,
+        success_url: window.location.origin + '/success',
+        cancel_url: window.location.origin + '/cancel'
       };
       
-      console.log('📤 Sending payload (matching working curl):', payload);
+      console.log('📤 Sending payload with success/cancel URLs:', payload);
       console.log('📤 Payload JSON:', JSON.stringify(payload, null, 2));
 
       // 1. Create Checkout Session (matching working curl exactly)
