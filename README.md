@@ -1,3 +1,15 @@
+# Overview
+
+BioRebate is a platform that helps users find the best supplement discounts customized to their unique health needs. 
+
+Users can upload their health records to receive personalized supplement recommendations, then how the platform delivers savings with exclusive deals.
+
+Personalized: BioRebate analyzes their biomarkers to suggest supplements that truly fit their wellness goals.
+
+savings: The platform searches across top brands to bring users exclusive discounts, ensuring they get what their bodies need—at the best price.
+
+The MOCA AIR 3 Kit ensures every recommendation and deal is based on real, verified health data, while giving users full control and privacy over their information.
+
 # Check
 
 b6 iron b12

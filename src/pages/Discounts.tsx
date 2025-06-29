@@ -5,6 +5,7 @@ import "@mocanetwork/air-credential-sdk/dist/style.css";
 import { type AirService, BUILD_ENV } from "@mocanetwork/airkit";
 import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 import type { EnvironmentConfig } from "../config/environments";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 
 interface DiscountsProps {
   airService?: AirService | null;
@@ -57,7 +58,6 @@ export default function Discounts({
     widgetUrl: "https://widget-sandbox.airprotocol.com"
   }
 }: DiscountsProps = {}) {
-  const [activeTab, setActiveTab] = useState<'available' | 'used' | 'expired'>('available');
   
   // Verification states
   const [isVerified, setIsVerified] = useState(false);
@@ -423,36 +423,31 @@ export default function Discounts({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex space-x-8">
-          {[
-            { key: 'available', label: 'Available', count: discounts.available.length },
-            { key: 'used', label: 'Used', count: discounts.used.length },
-            { key: 'expired', label: 'Expired', count: discounts.expired.length },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                activeTab === tab.key
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-                {tab.count}
-              </span>
-            </button>
-          ))}
-        </nav>
-      </div>
+      <Tabs defaultValue="available" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsTrigger value="available" className="relative">
+            Available
+            <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+              {discounts.available.length}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="used" className="relative">
+            Used
+            <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+              {discounts.used.length}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="expired" className="relative">
+            Expired
+            <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+              {discounts.expired.length}
+            </span>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Discount Cards */}
-      <div className="space-y-4">
-        {activeTab === 'available' && (
-          <>
-            {discounts.available.map((discount) => (
+        {/* Available Discounts Tab Content */}
+        <TabsContent value="available" className="space-y-4">
+          {discounts.available.map((discount) => (
               <div key={discount.id} className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex items-start space-x-4 mb-4 lg:mb-0">
@@ -498,79 +493,98 @@ export default function Discounts({
                 </div>
               </div>
             ))}
-          </>
-        )}
-
-        {activeTab === 'used' && (
-          <>
-            {discounts.used.map((discount) => (
-              <div key={discount.id} className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <CheckCircle className="h-8 w-8 text-green-500" />
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{discount.title}</h3>
-                      <p className="text-sm text-gray-600">{discount.brand}</p>
-                      <p className="text-sm text-gray-500">Used on {discount.usedDate}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-gray-700">${discount.discountPrice}</div>
-                    <div className="text-sm text-gray-400 line-through">${discount.originalPrice}</div>
-                    <div className="text-sm text-green-600">Saved {discount.discount}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </>
-        )}
-
-        {activeTab === 'expired' && (
-          <>
-            {discounts.expired.map((discount) => (
-              <div key={discount.id} className="bg-gray-50 rounded-xl p-6 border border-gray-200 opacity-60">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Clock className="h-8 w-8 text-gray-400" />
-                    <div>
-                      <h3 className="font-semibold text-gray-700">{discount.title}</h3>
-                      <p className="text-sm text-gray-500">{discount.brand}</p>
-                      <p className="text-sm text-gray-400">Expired on {discount.expiredDate}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-gray-500">${discount.discountPrice}</div>
-                    <div className="text-sm text-gray-400 line-through">${discount.originalPrice}</div>
-                    <div className="text-sm text-gray-400">Expired</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </>
-        )}
-      </div>
-
-      {/* Empty State */}
-      {((activeTab === 'available' && discounts.available.length === 0) ||
-        (activeTab === 'used' && discounts.used.length === 0) ||
-        (activeTab === 'expired' && discounts.expired.length === 0)) && (
-        <div className="text-center py-12">
-          <Gift className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No {activeTab} discounts
-          </h3>
-          <p className="text-gray-600 mb-6">
-            {activeTab === 'available'
-              ? 'Upload health records to unlock personalized discounts'
-              : `You don't have any ${activeTab} discounts yet`}
-          </p>
-          {activeTab === 'available' && (
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-              Upload Health Records
-            </button>
+          
+          {/* Empty State for Available */}
+          {discounts.available.length === 0 && (
+            <div className="text-center py-12">
+              <Gift className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No available discounts
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Upload health records to unlock personalized discounts
+              </p>
+              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                Upload Health Records
+              </button>
+            </div>
           )}
-        </div>
-      )}
+        </TabsContent>
+
+        {/* Used Discounts Tab Content */}
+        <TabsContent value="used" className="space-y-4">
+          {discounts.used.map((discount) => (
+            <div key={discount.id} className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <CheckCircle className="h-8 w-8 text-green-500" />
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{discount.title}</h3>
+                    <p className="text-sm text-gray-600">{discount.brand}</p>
+                    <p className="text-sm text-gray-500">Used on {discount.usedDate}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-gray-700">${discount.discountPrice}</div>
+                  <div className="text-sm text-gray-400 line-through">${discount.originalPrice}</div>
+                  <div className="text-sm text-green-600">Saved {discount.discount}</div>
+                </div>
+              </div>
+                          </div>
+            ))}
+          
+          {/* Empty State for Used */}
+          {discounts.used.length === 0 && (
+            <div className="text-center py-12">
+              <Gift className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No used discounts
+              </h3>
+              <p className="text-gray-600 mb-6">
+                You don't have any used discounts yet
+              </p>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Expired Discounts Tab Content */}
+        <TabsContent value="expired" className="space-y-4">
+          {discounts.expired.map((discount) => (
+            <div key={discount.id} className="bg-gray-50 rounded-xl p-6 border border-gray-200 opacity-60">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Clock className="h-8 w-8 text-gray-400" />
+                  <div>
+                    <h3 className="font-semibold text-gray-700">{discount.title}</h3>
+                    <p className="text-sm text-gray-500">{discount.brand}</p>
+                    <p className="text-sm text-gray-400">Expired on {discount.expiredDate}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-gray-500">${discount.discountPrice}</div>
+                  <div className="text-sm text-gray-400 line-through">${discount.originalPrice}</div>
+                  <div className="text-sm text-gray-400">Expired</div>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {/* Empty State for Expired */}
+          {discounts.expired.length === 0 && (
+            <div className="text-center py-12">
+              <Gift className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No expired discounts
+              </h3>
+              <p className="text-gray-600 mb-6">
+                You don't have any expired discounts yet
+              </p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
-} 
+}
+
+ 
