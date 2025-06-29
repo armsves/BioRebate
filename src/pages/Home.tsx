@@ -27,7 +27,7 @@ export default function Home() {
             <span className="text-blue-200"> Supplement Discounts</span>
           </h1>
           <p className="text-xl text-blue-100 mb-6">
-            Upload your health records and get AI-powered supplement recommendations with personalized discounts based on your biomarkers.
+            Upload your health records and get supplement recommendations with personalized discounts based on your biomarkers.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
