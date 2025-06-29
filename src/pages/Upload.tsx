@@ -828,56 +828,6 @@ export default function Upload({
                 </div>
               </div>
 
-              {/* Analysis Complete - Redirect to Discounts */}
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 border-2 border-green-200">
-                <div className="text-center">
-                  <div className="flex justify-center mb-4">
-                    <div className="bg-green-100 p-3 rounded-full">
-                      <CheckCircle2 className="h-8 w-8 text-green-600" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    Analysis Complete!
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    We've found {detectedDeficiencies.length} nutritional deficiencies and matched you with personalized supplement discounts.
-                  </p>
-                  
-                  {/* Summary of deficiencies */}
-                  <div className="bg-white rounded-lg p-4 mb-6 border border-green-200">
-                    <h4 className="font-semibold text-gray-900 mb-3">Deficiencies Found:</h4>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {detectedDeficiencies.slice(0, 4).map((deficiency, index) => (
-                        <span 
-                          key={index} 
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(deficiency.severity)}`}
-                        >
-                          {deficiency.name}
-                        </span>
-                      ))}
-                      {detectedDeficiencies.length > 4 && (
-                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
-                          +{detectedDeficiencies.length - 4} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => navigate('/discounts')}
-                    className="bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all transform hover:scale-105 flex items-center justify-center space-x-3 mx-auto"
-                  >
-                    <Gift className="h-6 w-6" />
-                    <span>View My Personalized Discounts</span>
-                    <ArrowRight className="h-6 w-6" />
-                  </button>
-                  
-                  <p className="text-sm text-gray-500 mt-4">
-                    Get up to 40% OFF on supplements tailored to your health needs
-                  </p>
-                </div>
-              </div>
-
               {/* Health Credential Issuance Section */}
               <div className="bg-white rounded-2xl p-6 border border-gray-200">
                 <div className="flex items-center space-x-2 mb-4">
@@ -1160,6 +1110,56 @@ export default function Upload({
                     Please log in using the wallet connection to issue credentials
                   </p>
                 )}
+              </div>
+
+              {/* Analysis Complete - Redirect to Discounts */}
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 border-2 border-green-200">
+                <div className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-green-100 p-3 rounded-full">
+                      <CheckCircle2 className="h-8 w-8 text-green-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Analysis Complete!
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    We've found {detectedDeficiencies.length} nutritional deficiencies and matched you with personalized supplement discounts.
+                  </p>
+                  
+                  {/* Summary of deficiencies */}
+                  <div className="bg-white rounded-lg p-4 mb-6 border border-green-200">
+                    <h4 className="font-semibold text-gray-900 mb-3">Deficiencies Found:</h4>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {detectedDeficiencies.slice(0, 4).map((deficiency, index) => (
+                        <span 
+                          key={index} 
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(deficiency.severity)}`}
+                        >
+                          {deficiency.name}
+                        </span>
+                      ))}
+                      {detectedDeficiencies.length > 4 && (
+                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                          +{detectedDeficiencies.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate('/discounts')}
+                    className="bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all transform hover:scale-105 flex items-center justify-center space-x-3 mx-auto"
+                  >
+                    <Gift className="h-6 w-6" />
+                    <span>View My Personalized Discounts</span>
+                    <ArrowRight className="h-6 w-6" />
+                  </button>
+                  
+                  <p className="text-sm text-gray-500 mt-4">
+                    Get up to 40% OFF on supplements tailored to your health needs
+                  </p>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">

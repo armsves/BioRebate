@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import "./App.css";
 import CredentialIssuance from "./components/issuance/CredentialIssuance";
 import CredentialVerification from "./components/verification/CredentialVerification";
@@ -21,25 +21,13 @@ const ENV_OPTIONS = [
   { label: "Sandbox", value: BUILD_ENV.SANDBOX },
 ];
 
-// Component to get current flow title
+// Component for the main title - always BioRebate and clickable to go home
 const FlowTitle = () => {
-  const location = useLocation();
-
-  if (location.pathname === "/issue") {
-    return <span className="text-brand-600">Issuance</span>;
-  } else if (location.pathname === "/verify") {
-    return <span className="text-verify-600">Verification</span>;
-  } else if (location.pathname === "/home") {
-    return <span className="text-blue-600">BioRebate</span>;
-  } else if (location.pathname === "/discounts") {
-    return <span className="text-green-600">My Discounts</span>;
-  } else if (location.pathname === "/upload") {
-    return <span className="text-purple-600">Upload</span>;
-  } else if (location.pathname === "/pharmacy") {
-    return <span className="text-orange-600">Pharmacy Dashboard</span>;
-  }
-
-  return <span>AIR Credential Demo</span>;
+  return (
+    <Link to="/home" className="text-blue-600 hover:text-blue-700 transition-colors">
+      BioRebate
+    </Link>
+  );
 };
 
 // Function to get default partner ID based on current route
@@ -134,16 +122,16 @@ function AppRoutes({
                   Home
                 </a>
                 <a
-                  href="/discounts"
-                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                >
-                  Discounts
-                </a>
-                <a
                   href="/upload"
                   className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
                 >
                   Upload
+                </a>
+                <a
+                  href="/discounts"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                >
+                  Discounts
                 </a>
                 {/* <a
                   href="/pharmacy"
