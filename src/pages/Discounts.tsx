@@ -65,7 +65,7 @@ export default function Discounts({
   const handleClaimDiscount = (discount: any) => {
     // Build payment link with product details
     const url = new URL(stripePaymentLink);
-    url.searchParams.set('prefilled_email', ''); // Can be populated if user email is available
+    url.searchParams.set('prefilled_email', 'wario@gmail.com'); // Can be populated if user email is available
     
     // Redirect to Stripe checkout
     window.open(url.toString(), '_blank');
