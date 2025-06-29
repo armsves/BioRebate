@@ -1,4 +1,4 @@
-import React from 'react';
+//import React from 'react';
 import { Star, Clock, Users } from 'lucide-react';
 
 interface SupplementCardProps {

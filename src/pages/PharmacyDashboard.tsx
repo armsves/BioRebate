@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Plus, Target, TrendingUp, Users, DollarSign, Edit3, Trash2, Calendar } from 'lucide-react';
 
 export default function PharmacyDashboard() {

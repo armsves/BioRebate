@@ -348,6 +348,7 @@ export default function Upload({
   const [issuanceError, setIssuanceError] = useState<string | null>(null);
   const widgetRef = useRef<AirCredentialWidget | null>(null);
   
+  console.log(showCredentialSection)
   // PDF parsing states
   const [pdfParseResult, setPdfParseResult] = useState<PDFParseResult | null>(null);
   const [isParsingPDF, setIsParsingPDF] = useState(false);
