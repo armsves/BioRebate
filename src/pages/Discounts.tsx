@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect } from 'react';
-import { Gift, Clock, Star, CheckCircle, Filter, Search, Shield, AlertTriangle, Award, ArrowRight } from 'lucide-react';
+import { Gift, Clock, Star, CheckCircle, Filter, Search, Shield, AlertTriangle, Award, ArrowRight, ShoppingCart, Minus, Plus, Trash2, CreditCard } from 'lucide-react';
+import CheckoutButton, { type CartItem } from '../components/CheckoutButton';
 import { AirCredentialWidget, type QueryRequest, type VerificationResults, type Language } from "@mocanetwork/air-credential-sdk";
 import "@mocanetwork/air-credential-sdk/dist/style.css";
 import { type AirService, BUILD_ENV } from "@mocanetwork/airkit";
@@ -60,17 +61,49 @@ export default function Discounts({
   }
 }: DiscountsProps = {}) {
 
-  // Stripe payment link
-  const stripePaymentLink = 'https://buy.stripe.com/test_28EfZh4r25lA7ky2NF2go00';
+  // Cart state management
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  const handleClaimDiscount = (discount: any) => {
-    // Build payment link with product details
-    const url = new URL(stripePaymentLink);
-    url.searchParams.set('prefilled_email', 'wario@gmail.com'); // Can be populated if user email is available
-    console.log("Claiming discount:", discount);
-    // Redirect to Stripe checkout
-    window.open(url.toString(), '_blank');
+  // Cart management functions
+  const addToCart = (discount: any) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === discount.id);
+      if (existing) {
+        return prev.map(item =>
+          item.id === discount.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        return [...prev, {
+          id: discount.id,
+          name: discount.title,
+          price: discount.discountPrice,
+          quantity: 1,
+          image: discount.image
+        }];
+      }
+    });
   };
+
+  const updateQuantity = (id: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeFromCart(id);
+    } else {
+      setCart(prev =>
+        prev.map(item =>
+          item.id === id ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    }
+  };
+
+  const removeFromCart = (id: string) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
+
+  const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   // Verification states
   const [isVerified, setIsVerified] = useState(false);
@@ -185,7 +218,7 @@ export default function Discounts({
         reason: 'Based on your cholesterol levels',
         category: 'Heart Health',
         rating: 4.8,
-        image: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=300',
+        image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop&crop=center',
       },
       {
         id: '2',
@@ -198,7 +231,7 @@ export default function Discounts({
         reason: 'Based on your vitamin D deficiency',
         category: 'Vitamins',
         rating: 4.9,
-        image: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=300',
+        image: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&h=400&fit=crop&crop=center',
       },
       {
         id: '3',
@@ -211,7 +244,7 @@ export default function Discounts({
         reason: 'Recommended for sleep improvement',
         category: 'Sleep Support',
         rating: 4.7,
-        image: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=300',
+        image: 'https://images.unsplash.com/photo-1550572017-edd951aa8eab?w=400&h=400&fit=crop&crop=center',
       },
       {
         id: '4',
@@ -224,7 +257,7 @@ export default function Discounts({
         reason: 'Based on digestive health indicators',
         category: 'Digestive Health',
         rating: 4.6,
-        image: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=300',
+        image: 'https://images.unsplash.com/photo-1584308666077-421b2b0e4b67?w=400&h=400&fit=crop&crop=center',
       },
     ],
     used: [
@@ -403,8 +436,8 @@ export default function Discounts({
         <p className="text-gray-600 text-center">Supplement deals based on your verified health profile</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* Stats and Cart Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-xl p-6 border border-gray-200">
             <div className="flex items-center justify-between">
@@ -416,6 +449,21 @@ export default function Discounts({
             </div>
           </div>
         ))}
+        {/* Cart Summary Card */}
+        <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-blue-600 mb-1">Cart Items</p>
+              <p className="text-2xl font-bold text-blue-600">{cartItemCount}</p>
+            </div>
+            <ShoppingCart className="h-8 w-8 text-blue-400" />
+          </div>
+          {cartTotal > 0 && (
+            <div className="mt-2 pt-2 border-t border-blue-200">
+              <p className="text-sm text-blue-800 font-medium">Total: ${cartTotal.toFixed(2)}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Search and Filter Bar */}
@@ -434,28 +482,33 @@ export default function Discounts({
         </button>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="available" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6">
-          <TabsTrigger value="available" className="relative">
-            Available
-            <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-              {discounts.available.length}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger value="used" className="relative">
-            Used
-            <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-              {discounts.used.length}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger value="expired" className="relative">
-            Expired
-            <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-              {discounts.expired.length}
-            </span>
-          </TabsTrigger>
-        </TabsList>
+      {/* Main Content with Discounts and Cart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Discounts Section */}
+        <div className="lg:col-span-2">
+          {/* Tabs */}
+          <Tabs defaultValue="available" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsTrigger value="available" className="relative">
+                Available
+                <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                  {discounts.available.length}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="used" className="relative">
+                Used
+                <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                  {discounts.used.length}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="expired" className="relative">
+                Expired
+                <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                  {discounts.expired.length}
+                </span>
+              </TabsTrigger>
+            </TabsList>
 
         {/* Available Discounts Tab Content */}
         <TabsContent value="available" className="space-y-4">
@@ -466,7 +519,10 @@ export default function Discounts({
                   <img
                     src={discount.image}
                     alt={discount.title}
-                    className="w-16 h-16 rounded-lg object-cover"
+                    className="w-16 h-16 rounded-lg object-cover shadow-md"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://via.placeholder.com/64x64/e5e7eb/9ca3af?text=No+Image';
+                    }}
                   />
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
@@ -499,10 +555,11 @@ export default function Discounts({
                     <div className="text-sm text-gray-400 line-through">${discount.originalPrice}</div>
                   </div>
                   <button 
-                    onClick={() => handleClaimDiscount(discount)}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    onClick={() => addToCart(discount)}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2"
                   >
-                    Claim Now
+                    <ShoppingCart className="h-4 w-4" />
+                    <span>Add to Cart</span>
                   </button>
                 </div>
               </div>
@@ -601,6 +658,101 @@ export default function Discounts({
           )}
         </TabsContent>
       </Tabs>
+        </div>
+
+        {/* Cart Section */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
+              <ShoppingCart className="h-5 w-5" />
+              <span>Cart ({cartItemCount})</span>
+            </h2>
+
+            {cart.length === 0 ? (
+              <div className="text-center py-8">
+                <ShoppingCart className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500">Your cart is empty</p>
+                <p className="text-gray-400 text-sm">Add discounted items to get started</p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3">
+                      <div className="flex-shrink-0">
+                        <img 
+                          src={item.image} 
+                          alt={item.name}
+                          className="w-12 h-12 object-cover rounded-md"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/48x48/e5e7eb/9ca3af?text=No+Image';
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900 text-sm">{item.name}</h4>
+                        <p className="text-green-600 font-semibold">${item.price}</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="text-gray-500 hover:text-gray-700 p-1"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="text-gray-900 font-medium min-w-[20px] text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="text-gray-500 hover:text-gray-700 p-1"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-red-500 hover:text-red-700 p-1 ml-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Cart Total */}
+                <div className="border-t pt-4 mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-600">Subtotal:</span>
+                    <span className="font-semibold">${cartTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-600">Shipping:</span>
+                    <span className="font-semibold text-green-600">FREE</span>
+                  </div>
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold">Total:</span>
+                      <span className="text-xl font-bold text-green-600">${cartTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Checkout Button */}
+                <CheckoutButton 
+                  cartItems={cart}
+                  className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <CreditCard className="h-5 w-5" />
+                    <span>Checkout - ${cartTotal.toFixed(2)}</span>
+                  </div>
+                </CheckoutButton>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
