@@ -8,7 +8,7 @@ import Home from "./pages/Home";
 import Discounts from "./pages/Discounts";
 import Upload from "./pages/Upload";
 import PharmacyDashboard from "./pages/PharmacyDashboard";
-import StripeCheckout from "./pages/StripeCheckout";
+
 import Success from "./pages/Success";
 import Cancel from "./pages/Cancel";
 import NavBarLogin from "./components/NavBarLogin";
@@ -94,8 +94,6 @@ function AppRoutes({
           ? "bg-gradient-to-br from-green-50 to-green-100"
           : location.pathname === "/upload"
           ? "bg-gradient-to-br from-purple-50 to-purple-100"
-          : location.pathname === "/stripe-checkout"
-          ? "bg-gradient-to-br from-indigo-50 to-indigo-100"
           : location.pathname === "/success"
           ? "bg-gradient-to-br from-green-50 to-green-100"
           : location.pathname === "/cancel"
@@ -144,12 +142,7 @@ function AppRoutes({
                   >
                     Discounts
                   </Link>
-                  <Link
-                    to="/stripe-checkout"
-                    className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                  >
-                    Checkout
-                  </Link>
+
               </nav>
               <div className="w-full sm:w-auto">
                 <NavBarLogin
@@ -201,7 +194,7 @@ function AppRoutes({
               />
             } 
           />
-          <Route path="/stripe-checkout" element={<StripeCheckout />} />
+
           <Route path="/success" element={<Success />} />
           <Route path="/cancel" element={<Cancel />} />
           <Route path="/pharmacy" element={<PharmacyDashboard />} />

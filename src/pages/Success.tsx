@@ -93,12 +93,12 @@ const Success = () => {
           </div>
 
           <Link
-            to="/stripe-checkout"
+                          to="/discounts"
             className="inline-flex items-center justify-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
           >
-            <span>Continue Shopping</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+                          <span>Browse More Discounts</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
         </div>
 
         {/* Support Info */}

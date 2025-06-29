@@ -25,7 +25,7 @@ const Cancel = () => {
           <div className="space-y-2 text-sm text-orange-800">
             <p>• You canceled the payment process on the Stripe checkout page</p>
             <p>• No charges were made to your payment method</p>
-            <p>• Your cart items are still available if you'd like to try again</p>
+            <p>• Your discounted items are still available in the discounts section</p>
           </div>
         </div>
 
@@ -42,8 +42,8 @@ const Cancel = () => {
               <p>Try a different card or payment method when you're ready.</p>
             </div>
             <div>
-              <p className="font-medium">🔍 Want to review your order?</p>
-              <p>You can go back to your cart to make any changes.</p>
+              <p className="font-medium">🔍 Want to review your selections?</p>
+              <p>You can go back to the discounts page to review available deals.</p>
             </div>
             <div>
               <p className="font-medium">❓ Need help?</p>
@@ -56,11 +56,11 @@ const Cancel = () => {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/stripe-checkout"
+              to="/discounts"
               className="inline-flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>Back to Cart</span>
+              <span>Browse Discounts</span>
             </Link>
             
             <Link
