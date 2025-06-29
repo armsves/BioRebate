@@ -225,7 +225,7 @@ function AppRoutes({
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200">
-        <div className="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
+        <div className="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-4 py-2 sm:py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
             {/* Developer Links */}
             <div className="flex items-center space-x-4">

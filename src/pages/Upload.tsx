@@ -629,14 +629,11 @@ export default function Upload({
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Upload Health Records & Get Smart Discounts
         </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Our AI analyzes your biomarkers to identify nutritional deficiencies and matches you with targeted supplement discounts.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -669,7 +666,7 @@ export default function Upload({
                   <div className="flex flex-col sm:flex-row gap-3 items-center">
                     <label
                       htmlFor="file-upload"
-                      className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 cursor-pointer inline-block transition-colors"
+                      className="bg-blue-600 text-white px-6 py-1 rounded-lg font-medium hover:bg-blue-700 cursor-pointer inline-block transition-colors"
                     >
                       Choose File
                     </label>
@@ -1214,24 +1211,7 @@ export default function Upload({
             </div>
           ))}
 
-          {/* Example Analysis */}
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-4">Example Analysis Results</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700">Vitamin D Deficiency</span>
-                <span className="font-semibold text-red-600">35% OFF</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700">Low B12 Levels</span>
-                <span className="font-semibold text-orange-600">25% OFF</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700">Iron Deficiency</span>
-                <span className="font-semibold text-yellow-600">20% OFF</span>
-              </div>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>
