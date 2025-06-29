@@ -30,7 +30,7 @@ const ENV_OPTIONS = [
 const FlowTitle = () => {
   return (
     <Link to="/home" className="text-blue-600 hover:text-blue-700 transition-colors">
-      BioRebate
+      Bio<b>Rebate</b>
     </Link>
   );
 };
