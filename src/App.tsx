@@ -8,8 +8,6 @@ import Home from "./pages/Home";
 import Discounts from "./pages/Discounts";
 import Upload from "./pages/Upload";
 import PharmacyDashboard from "./pages/PharmacyDashboard";
-import Checkout from "./pages/Checkout";
-import Polar from "./pages/Polar";
 import NavBarLogin from "./components/NavBarLogin";
 import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 import { getEnvironmentConfig, type EnvironmentConfig } from "./config/environments";
@@ -93,10 +91,6 @@ function AppRoutes({
           ? "bg-gradient-to-br from-green-50 to-green-100"
           : location.pathname === "/upload"
           ? "bg-gradient-to-br from-purple-50 to-purple-100"
-          : location.pathname === "/checkout"
-          ? "bg-gradient-to-br from-indigo-50 to-indigo-100"
-          : location.pathname === "/polar"
-          ? "bg-gradient-to-br from-yellow-50 to-orange-100"
           : location.pathname === "/pharmacy"
           ? "bg-gradient-to-br from-orange-50 to-orange-100"
           : "bg-gradient-to-br from-gray-50 to-gray-200")
@@ -141,18 +135,7 @@ function AppRoutes({
                 >
                   Discounts
                 </a>
-                <a
-                  href="/checkout"
-                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                >
-                  Checkout
-                </a>
-                <a
-                  href="/polar"
-                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                >
-                  Polar
-                </a>
+
                 {/* <a
                   href="/pharmacy"
                   className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
@@ -211,8 +194,6 @@ function AppRoutes({
               />
             } 
           />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/polar" element={<Polar />} />
           <Route path="/pharmacy" element={<PharmacyDashboard />} />
 
           {/* Issuance Flow */}

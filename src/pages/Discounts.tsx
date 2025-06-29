@@ -59,6 +59,18 @@ export default function Discounts({
   }
 }: DiscountsProps = {}) {
 
+  // Stripe payment link
+  const stripePaymentLink = 'https://buy.stripe.com/test_28EfZh4r25lA7ky2NF2go00';
+
+  const handleClaimDiscount = (discount: any) => {
+    // Build payment link with product details
+    const url = new URL(stripePaymentLink);
+    url.searchParams.set('prefilled_email', ''); // Can be populated if user email is available
+    
+    // Redirect to Stripe checkout
+    window.open(url.toString(), '_blank');
+  };
+
   // Verification states
   const [isVerified, setIsVerified] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -485,7 +497,10 @@ export default function Discounts({
                     <div className="text-2xl font-bold text-blue-600">${discount.discountPrice}</div>
                     <div className="text-sm text-gray-400 line-through">${discount.originalPrice}</div>
                   </div>
-                  <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                  <button 
+                    onClick={() => handleClaimDiscount(discount)}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
                     Claim Now
                   </button>
                 </div>
@@ -503,9 +518,12 @@ export default function Discounts({
               <p className="text-gray-600 mb-6">
                 Upload health records to unlock personalized discounts
               </p>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+              <a 
+                href="/upload"
+                className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
                 Upload Health Records
-              </button>
+              </a>
               </div>
           )}
         </TabsContent>
