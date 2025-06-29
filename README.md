@@ -210,3 +210,187 @@ For issues related to:
 
 - **AIR Credential SDK**: Contact the AIR team
 - **This Demo Application**: Open an issue in this repository
+
+# BioRebate
+
+A health-focused application that allows users to upload health records, get verifiable credentials, and access personalized supplement discounts.
+
+## Features
+
+- Upload and process health documents (PDFs)
+- Generate verifiable credentials for health data
+- Access personalized supplement discounts
+- Integration with Stripe Payment Links for purchasing
+
+## Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- A Stripe account for payment processing
+- Air Protocol credentials for document verification
+
+## Getting Started
+
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/BioRebate.git
+cd BioRebate
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create a `.env` file in the root directory and add your environment variables:
+```env
+VITE_VERIFIER_API_KEY=your-verifier-api-key
+VITE_VERIFIER_DID=your-verifier-did
+VITE_PROGRAM_ID=your-program-id
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+## Stripe Payment Links Setup
+
+The application uses Stripe Payment Links for processing supplement purchases. To set up payment links for testing:
+
+### 1. Create a Stripe Account
+- Go to [stripe.com](https://stripe.com) and create an account
+- Switch to test mode in the Stripe Dashboard
+
+### 2. Create Products and Payment Links
+
+For each supplement discount, create a corresponding product and payment link:
+
+#### Product 1: Omega-3 Fish Oil
+- **Product Name**: Omega-3 Fish Oil (30% OFF)
+- **Price**: $24.49 (discounted from $34.99)
+- **Description**: High-quality fish oil supplement for heart health
+- **Enable shipping address collection**: Yes
+- **Shipping rates**: Add standard shipping options
+
+#### Product 2: Vitamin D3 5000 IU  
+- **Product Name**: Vitamin D3 5000 IU (25% OFF)
+- **Price**: $22.49 (discounted from $29.99)
+- **Description**: High-potency Vitamin D3 for bone and immune health
+- **Enable shipping address collection**: Yes
+
+#### Product 3: Magnesium Glycinate
+- **Product Name**: Magnesium Glycinate (40% OFF)
+- **Price**: $23.99 (discounted from $39.99)
+- **Description**: Highly absorbable magnesium for sleep and relaxation
+- **Enable shipping address collection**: Yes
+
+#### Product 4: Probiotics 50 Billion CFU
+- **Product Name**: Probiotics 50 Billion CFU (35% OFF)
+- **Price**: $32.49 (discounted from $49.99)
+- **Description**: Multi-strain probiotic for digestive health
+- **Enable shipping address collection**: Yes
+
+### 3. Configure Payment Link Settings
+
+For each payment link, configure the following settings:
+
+- **Collect customer addresses**: Enable both billing and shipping addresses
+- **Shipping countries**: Select countries you ship to (e.g., US, Canada)
+- **Add shipping rates**: 
+  - Standard Shipping: $5.99 (5-7 business days)
+  - Express Shipping: $12.99 (2-3 business days)
+  - Overnight Shipping: $19.99 (1 business day)
+- **Collect phone number**: Enable for shipping notifications
+- **Save payment details**: Optional (for future purchases)
+
+### 4. Update Payment Links in Code
+
+After creating your payment links, update the `testPaymentLinks` object in `src/pages/Discounts.tsx`:
+
+```typescript
+const testPaymentLinks = {
+  '1': 'https://buy.stripe.com/test_YOUR_OMEGA3_LINK',
+  '2': 'https://buy.stripe.com/test_YOUR_VITAMIND3_LINK', 
+  '3': 'https://buy.stripe.com/test_YOUR_MAGNESIUM_LINK',
+  '4': 'https://buy.stripe.com/test_YOUR_PROBIOTICS_LINK',
+};
+```
+
+### 5. Test Payment Flow
+
+Use Stripe's test card numbers for testing:
+
+- **Successful payment**: 4242 4242 4242 4242
+- **Declined payment**: 4000 0000 0000 0002
+- **Requires authentication**: 4000 0025 0000 3155
+
+For testing, use:
+- **Expiry date**: Any future date (e.g., 12/25)
+- **CVC**: Any 3 digits (e.g., 123)
+- **ZIP code**: Any valid postal code
+
+## Testing Instructions
+
+### Step 1: Complete the Upload Flow
+1. Navigate to the Upload page
+2. Upload a health document (PDF)
+3. Complete the credential issuance process
+4. Verify you're redirected to the Discounts page
+
+### Step 2: Verify Health Credential
+1. On the Discounts page, click "Verify Credential"
+2. Complete the verification process
+3. You should see the available discounts
+
+### Step 3: Test Purchase Flow
+1. Click "Buy Now" on any supplement discount
+2. You'll be redirected to the Stripe Payment Link
+3. Fill in shipping address and payment information
+4. Use test card number: 4242 4242 4242 4242
+5. Complete the purchase
+
+### Step 4: Verify Shipping Address Collection
+- Confirm that shipping address is required
+- Test different shipping options and rates
+- Verify that shipping costs are calculated correctly
+
+## Expected Payment Flow
+
+1. **User clicks "Buy Now"** → Opens Stripe Payment Link in new tab
+2. **Customer enters shipping address** → Required for all purchases
+3. **Customer selects shipping method** → Standard, Express, or Overnight
+4. **Customer enters payment information** → Test cards work in test mode
+5. **Payment processed** → Customer receives confirmation email
+6. **Merchant receives webhook** → Order fulfillment can begin
+
+## Architecture
+
+```
+Upload → Issue Credential → Verify Credential → View Discounts → Purchase with Stripe
+```
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production  
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## Technologies Used
+
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Stripe Payment Links
+- Air Protocol SDK
+- Lucide React (icons)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
