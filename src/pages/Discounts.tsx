@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect } from 'react';
 import { Gift, Clock, Star, CheckCircle, Filter, Search, Shield, AlertTriangle, Award, ArrowRight } from 'lucide-react';
 import { AirCredentialWidget, type QueryRequest, type VerificationResults, type Language } from "@mocanetwork/air-credential-sdk";
@@ -66,7 +67,7 @@ export default function Discounts({
     // Build payment link with product details
     const url = new URL(stripePaymentLink);
     url.searchParams.set('prefilled_email', 'wario@gmail.com'); // Can be populated if user email is available
-    
+    console.log("Claiming discount:", discount);
     // Redirect to Stripe checkout
     window.open(url.toString(), '_blank');
   };
