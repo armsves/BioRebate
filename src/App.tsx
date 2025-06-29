@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
+import { Elements } from '@stripe/react-stripe-js';
 import "./App.css";
 import CredentialIssuance from "./components/issuance/CredentialIssuance";
 import CredentialVerification from "./components/verification/CredentialVerification";
@@ -7,9 +8,12 @@ import Home from "./pages/Home";
 import Discounts from "./pages/Discounts";
 import Upload from "./pages/Upload";
 import PharmacyDashboard from "./pages/PharmacyDashboard";
+import Checkout from "./pages/Checkout";
+import Polar from "./pages/Polar";
 import NavBarLogin from "./components/NavBarLogin";
 import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 import { getEnvironmentConfig, type EnvironmentConfig } from "./config/environments";
+import getStripe from "./lib/stripe";
 
 // Get partner IDs from environment variables
 const ISSUER_PARTNER_ID = import.meta.env.VITE_ISSUER_PARTNER_ID || "0383ce1d-82dc-4311-971e-1e43c9516ff9";
@@ -89,6 +93,10 @@ function AppRoutes({
           ? "bg-gradient-to-br from-green-50 to-green-100"
           : location.pathname === "/upload"
           ? "bg-gradient-to-br from-purple-50 to-purple-100"
+          : location.pathname === "/checkout"
+          ? "bg-gradient-to-br from-indigo-50 to-indigo-100"
+          : location.pathname === "/polar"
+          ? "bg-gradient-to-br from-yellow-50 to-orange-100"
           : location.pathname === "/pharmacy"
           ? "bg-gradient-to-br from-orange-50 to-orange-100"
           : "bg-gradient-to-br from-gray-50 to-gray-200")
@@ -132,6 +140,18 @@ function AppRoutes({
                   className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
                 >
                   Discounts
+                </a>
+                <a
+                  href="/checkout"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                >
+                  Checkout
+                </a>
+                <a
+                  href="/polar"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                >
+                  Polar
                 </a>
                 {/* <a
                   href="/pharmacy"
@@ -191,6 +211,8 @@ function AppRoutes({
               />
             } 
           />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/polar" element={<Polar />} />
           <Route path="/pharmacy" element={<PharmacyDashboard />} />
 
           {/* Issuance Flow */}
@@ -260,9 +282,14 @@ function App() {
   const [userAddress, setUserAddress] = useState<string | null>(null);
   const [currentEnv, setCurrentEnv] = useState<BUILD_ENV_TYPE>(BUILD_ENV.SANDBOX);
   const [partnerId, setPartnerId] = useState<string>(ISSUER_PARTNER_ID);
+  const [stripePromise, setStripePromise] = useState<Promise<import('@stripe/stripe-js').Stripe | null>>();
 
   // Get environment config based on current environment
   const environmentConfig = getEnvironmentConfig(currentEnv);
+
+  useEffect(() => {
+    setStripePromise(getStripe());
+  }, []);
 
   const initializeAirService = async (env: BUILD_ENV_TYPE = currentEnv, partnerIdToUse: string = partnerId) => {
     if (!partnerIdToUse || partnerIdToUse === "your-partner-id") {
@@ -360,23 +387,27 @@ function App() {
     }
   };
 
+  if (!stripePromise) return null;
+
   return (
-    <Router>
-      <AppRoutes
-        airService={airService}
-        isInitialized={isInitialized}
-        isLoading={isLoading}
-        isLoggedIn={isLoggedIn}
-        userAddress={userAddress}
-        handleLogin={handleLogin}
-        handleLogout={handleLogout}
-        currentEnv={currentEnv}
-        setCurrentEnv={(env) => setCurrentEnv(env as BUILD_ENV_TYPE)}
-        partnerId={partnerId}
-        setPartnerId={setPartnerId}
-        environmentConfig={environmentConfig}
-      />
-    </Router>
+    <Elements stripe={stripePromise}>
+      <Router>
+        <AppRoutes
+          airService={airService}
+          isInitialized={isInitialized}
+          isLoading={isLoading}
+          isLoggedIn={isLoggedIn}
+          userAddress={userAddress}
+          handleLogin={handleLogin}
+          handleLogout={handleLogout}
+          currentEnv={currentEnv}
+          setCurrentEnv={(env) => setCurrentEnv(env as BUILD_ENV_TYPE)}
+          partnerId={partnerId}
+          setPartnerId={setPartnerId}
+          environmentConfig={environmentConfig}
+        />
+      </Router>
+    </Elements>
   );
 }
 
