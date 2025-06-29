@@ -194,7 +194,18 @@ function AppRoutes({
 
           {/* BioRebate Pages */}
           <Route path="/home" element={<Home />} />
-          <Route path="/discounts" element={<Discounts />} />
+          <Route 
+            path="/discounts" 
+            element={
+              <Discounts 
+                airService={airService}
+                isLoggedIn={isLoggedIn}
+                airKitBuildEnv={currentEnv}
+                partnerId={partnerId}
+                environmentConfig={environmentConfig}
+              />
+            } 
+          />
           <Route 
             path="/upload" 
             element={

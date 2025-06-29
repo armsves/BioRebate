@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Activity, AlertTriangle, ArrowRight, FileText, Gift, TrendingDown, Upload as UploadIcon, Award } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowRight, FileText, Gift, Upload as UploadIcon, Award, CheckCircle2 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AirCredentialWidget, type ClaimRequest, type JsonDocumentObject, type Language } from "@mocanetwork/air-credential-sdk";
 import "@mocanetwork/air-credential-sdk/dist/style.css";
 import { AirService, BUILD_ENV } from "@mocanetwork/airkit";
@@ -31,19 +32,7 @@ interface Deficiency {
   severity: 'mild' | 'moderate' | 'severe';
 }
 
-interface Discount {
-  id: string;
-  title: string;
-  brand: string;
-  discount: number;
-  originalPrice: number;
-  discountPrice: number;
-  reason: string;
-  category: string;
-  rating: number;
-  image: string;
-  deficiencyMatch: string;
-}
+
 
 interface UploadProps {
   airService?: AirService | null;
@@ -346,11 +335,11 @@ export default function Upload({
     widgetUrl: "https://widget-sandbox.airprotocol.com"
   }
 }: UploadProps = {}) {
+  const navigate = useNavigate();
   const [uploadStep, setUploadStep] = useState<'upload' | 'processing' | 'analyzing' | 'complete'>('upload');
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [detectedDeficiencies, setDetectedDeficiencies] = useState<Deficiency[]>([]);
-  const [personalizedDiscounts, setPersonalizedDiscounts] = useState<Discount[]>([]);
   
   // Credential issuance states
   const [showCredentialSection, setShowCredentialSection] = useState(false);
@@ -402,60 +391,7 @@ export default function Upload({
     }
   ];
 
-  const mockDiscounts: Discount[] = [
-    {
-      id: '1',
-      title: 'Vitamin D3 5000 IU High Potency',
-      brand: 'SunVitamin Pro',
-      discount: 35,
-      originalPrice: 29.99,
-      discountPrice: 19.49,
-      reason: 'Severe Vitamin D deficiency detected',
-      category: 'Vitamins',
-      rating: 4.9,
-      image: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=300',
-      deficiencyMatch: 'Vitamin D'
-    },
-    {
-      id: '2',
-      title: 'Methylcobalamin B12 1000mcg',
-      brand: 'NeuroPlex',
-      discount: 25,
-      originalPrice: 24.99,
-      discountPrice: 18.74,
-      reason: 'Low B12 levels require supplementation',
-      category: 'B-Vitamins',
-      rating: 4.8,
-      image: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=300',
-      deficiencyMatch: 'Vitamin B12'
-    },
-    {
-      id: '3',
-      title: 'Chelated Iron Complex 28mg',
-      brand: 'IronMax',
-      discount: 20,
-      originalPrice: 19.99,
-      discountPrice: 15.99,
-      reason: 'Borderline iron levels detected',
-      category: 'Minerals',
-      rating: 4.6,
-      image: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=300',
-      deficiencyMatch: 'Iron'
-    },
-    {
-      id: '4',
-      title: 'Magnesium Glycinate 400mg',
-      brand: 'MineralMax',
-      discount: 30,
-      originalPrice: 34.99,
-      discountPrice: 24.49,
-      reason: 'Low magnesium affects sleep and muscle function',
-      category: 'Sleep Support',
-      rating: 4.7,
-      image: 'https://images.pexels.com/photos/3683040/pexels-photo-3683040.jpeg?auto=compress&cs=tinysrgb&w=300',
-      deficiencyMatch: 'Magnesium'
-    }
-  ];
+
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -537,17 +473,8 @@ export default function Upload({
       setUploadStep('analyzing');
       setIsParsingPDF(false);
       
-      // Continue with your existing analysis logic...
+      // Continue with analysis logic...
       setTimeout(() => {
-        const currentDeficiencies = detectedDeficiencies.length > 0 ? detectedDeficiencies : mockDeficiencies;
-        const relevantDiscounts = mockDiscounts.filter(discount => 
-          currentDeficiencies.some(def => 
-            discount.deficiencyMatch.toLowerCase().includes(def.name.toLowerCase()) ||
-            def.name.toLowerCase().includes(discount.deficiencyMatch.toLowerCase())
-          )
-        );
-        
-        setPersonalizedDiscounts(relevantDiscounts.length > 0 ? relevantDiscounts : mockDiscounts);
         setUploadStep('complete');
       }, 2500);
       
@@ -557,7 +484,6 @@ export default function Upload({
       
       // Fall back to mock data
       setDetectedDeficiencies(mockDeficiencies);
-      setPersonalizedDiscounts(mockDiscounts);
       setUploadStep('complete');
       setIsParsingPDF(false);
     }
@@ -572,28 +498,33 @@ export default function Upload({
     }
   };
 
-  // Convert deficiencies to credential subject
+  // Convert deficiencies to credential subject using exact medical schema
   const convertDeficienciesToCredentialSubject = (): JsonDocumentObject => {
-    const subject: JsonDocumentObject = {
-      // Add basic health record info
-      recordDate: new Date().toISOString().split('T')[0],
-      analysisType: "Nutritional Deficiency Analysis",
-      patientId: "anonymous", // In real app, this would be user ID
+    // Extract demographic data from PDF if available
+    const age = pdfParseResult?.demographics?.age || 35;
+    const gender = pdfParseResult?.demographics?.gender === 'Male' ? 1 : 0; // 1 = Male, 0 = Female
+
+    // Extract biomarker values from parsed data or use default values
+    const getVitaminValue = (vitaminName: string, defaultValue: number): number => {
+      const biomarker = pdfParseResult?.biomarkers?.find(b => 
+        b.name.toLowerCase().includes(vitaminName.toLowerCase())
+      );
+      return biomarker?.value ?? defaultValue; // Use nullish coalescing to handle 0 values
     };
 
-    // Add deficiency data
-    detectedDeficiencies.forEach((deficiency, index) => {
-      const prefix = `deficiency_${index + 1}`;
-      subject[`${prefix}_name`] = deficiency.name;
-      subject[`${prefix}_level`] = deficiency.level;
-      subject[`${prefix}_value`] = deficiency.value;
-      subject[`${prefix}_severity`] = deficiency.severity;
-    });
+    const subject: JsonDocumentObject = {
+      // Medical Schema credentialSubject fields (id handled by AIR system)
+      "age-field": age, // number - required
+      "gender-field": gender, // number - required
+      "vitamin-B12-field": getVitaminValue('B12', 300), // number
+      "ferritin-field": getVitaminValue('ferritin', 50), // number
+      "hemoglobin-field": getVitaminValue('hemoglobin', 13), // number
+      "vitamin-B9-field": getVitaminValue('folate', 8), // number (B9 is folate)
+      "vitamin-D-field": getVitaminValue('vitamin D', 25), // number
+      "date-creation-field": new Date().toISOString().split('T')[0] // string
+    };
 
-    // Add summary
-    subject.total_deficiencies = detectedDeficiencies.length;
-    subject.severe_count = detectedDeficiencies.filter(d => d.severity === 'severe').length;
-
+    console.log("Subject:", subject);
     return subject;
   };
 
@@ -616,6 +547,8 @@ export default function Upload({
         credentialId: config.credentialId,
         credentialSubject: credentialSubject,
       };
+
+      console.log("Claim request:", claimRequest);
 
       const rp = await airService?.goToPartner(environmentConfig.widgetUrl).catch((err) => {
         console.error("Error getting URL with token:", err);
@@ -894,49 +827,53 @@ export default function Upload({
                 </div>
               </div>
 
-              {/* Personalized Discounts */}
-              <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                <div className="flex items-center space-x-2 mb-4">
-                  <Gift className="h-6 w-6 text-green-500" />
-                  <h3 className="text-lg font-semibold text-gray-900">Your Personalized Discounts</h3>
-                </div>
-                <div className="space-y-4">
-                  {personalizedDiscounts.map((discount) => (
-                    <div key={discount.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start space-x-4">
-                        <img
-                          src={discount.image}
-                          alt={discount.title}
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                              -{discount.discount}% OFF
-                            </span>
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                              {discount.category}
-                            </span>
-                          </div>
-                          <h4 className="font-semibold text-gray-900 mb-1">{discount.title}</h4>
-                          <p className="text-sm text-gray-600 mb-1">{discount.brand}</p>
-                          <p className="text-sm text-blue-600 mb-2">
-                            <TrendingDown className="h-3 w-3 inline mr-1" />
-                            {discount.reason}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-lg font-bold text-blue-600">${discount.discountPrice}</span>
-                              <span className="text-sm text-gray-400 line-through">${discount.originalPrice}</span>
-                            </div>
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                              Claim Deal
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+              {/* Analysis Complete - Redirect to Discounts */}
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 border-2 border-green-200">
+                <div className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-green-100 p-3 rounded-full">
+                      <CheckCircle2 className="h-8 w-8 text-green-600" />
                     </div>
-                  ))}
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Analysis Complete!
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    We've found {detectedDeficiencies.length} nutritional deficiencies and matched you with personalized supplement discounts.
+                  </p>
+                  
+                  {/* Summary of deficiencies */}
+                  <div className="bg-white rounded-lg p-4 mb-6 border border-green-200">
+                    <h4 className="font-semibold text-gray-900 mb-3">Deficiencies Found:</h4>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {detectedDeficiencies.slice(0, 4).map((deficiency, index) => (
+                        <span 
+                          key={index} 
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(deficiency.severity)}`}
+                        >
+                          {deficiency.name}
+                        </span>
+                      ))}
+                      {detectedDeficiencies.length > 4 && (
+                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                          +{detectedDeficiencies.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate('/discounts')}
+                    className="bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all transform hover:scale-105 flex items-center justify-center space-x-3 mx-auto"
+                  >
+                    <Gift className="h-6 w-6" />
+                    <span>View My Personalized Discounts</span>
+                    <ArrowRight className="h-6 w-6" />
+                  </button>
+                  
+                  <p className="text-sm text-gray-500 mt-4">
+                    Get up to 40% OFF on supplements tailored to your health needs
+                  </p>
                 </div>
               </div>
 
@@ -955,17 +892,73 @@ export default function Upload({
 
                 {/* Credential Subject Preview */}
                 <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Credential Subject Preview</h4>
-                  <p className="text-sm text-gray-600 mb-4">The following data will be included in your verifiable credential:</p>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Medical Schema Preview</h4>
+                  <p className="text-sm text-gray-600 mb-4">Your health credential will include the following 8 medical data fields (ID handled automatically by AIR system):</p>
                   
                   <div className="space-y-4">
-                    {/* Basic Health Record Info */}
+                    {/* Age Field */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="bg-white rounded-lg p-3 border">
                         <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
                         <input
                           type="text"
-                          value="recordDate"
+                          value="age-field"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>Number</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value={pdfParseResult?.demographics?.age?.toString() || "35"}
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Gender Field */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="gender-field"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>Number</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value={pdfParseResult?.demographics?.gender === 'Male' ? "1" : "0"}
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Date Creation Field */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="date-creation-field"
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -987,39 +980,13 @@ export default function Upload({
                       </div>
                     </div>
 
+                    {/* Vitamin B12 Field */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="bg-white rounded-lg p-3 border">
                         <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
                         <input
                           type="text"
-                          value="analysisType"
-                          readOnly
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
-                        />
-                      </div>
-                      <div className="bg-white rounded-lg p-3 border">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
-                          <option>String</option>
-                        </select>
-                      </div>
-                      <div className="bg-white rounded-lg p-3 border">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
-                        <input
-                          type="text"
-                          value="Nutritional Deficiency Analysis"
-                          readOnly
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-white rounded-lg p-3 border">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
-                        <input
-                          type="text"
-                          value="total_deficiencies"
+                          value="vitamin-B12-field"
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -1034,19 +1001,20 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={detectedDeficiencies.length.toString()}
+                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('b12'))?.value?.toString() || "300"}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
                       </div>
                     </div>
 
+                    {/* Ferritin Field */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="bg-white rounded-lg p-3 border">
                         <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
                         <input
                           type="text"
-                          value="severe_count"
+                          value="ferritin-field"
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -1061,79 +1029,96 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={detectedDeficiencies.filter(d => d.severity === 'severe').length.toString()}
+                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('ferritin'))?.value?.toString() || "50"}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
                       </div>
                     </div>
 
-                    {/* Deficiency Details Preview */}
-                    {detectedDeficiencies.slice(0, 2).map((deficiency, index) => (
-                      <div key={index} className="border-t pt-4">
-                        <h5 className="text-sm font-medium text-gray-800 mb-3">Deficiency {index + 1} Sample Data</h5>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                            <div className="bg-white rounded-lg p-2 border">
-                              <label className="block text-xs font-medium text-gray-700 mb-1">Field</label>
-                              <input
-                                type="text"
-                                value={`deficiency_${index + 1}_name`}
-                                readOnly
-                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
-                              />
-                            </div>
-                            <div className="bg-white rounded-lg p-2 border">
-                              <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                              <select disabled className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50">
-                                <option>String</option>
-                              </select>
-                            </div>
-                            <div className="bg-white rounded-lg p-2 border">
-                              <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
-                              <input
-                                type="text"
-                                value={deficiency.name}
-                                readOnly
-                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
-                              />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                            <div className="bg-white rounded-lg p-2 border">
-                              <label className="block text-xs font-medium text-gray-700 mb-1">Field</label>
-                              <input
-                                type="text"
-                                value={`deficiency_${index + 1}_severity`}
-                                readOnly
-                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
-                              />
-                            </div>
-                            <div className="bg-white rounded-lg p-2 border">
-                              <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                              <select disabled className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50">
-                                <option>String</option>
-                              </select>
-                            </div>
-                            <div className="bg-white rounded-lg p-2 border">
-                              <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
-                              <input
-                                type="text"
-                                value={deficiency.severity}
-                                readOnly
-                                className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
-                              />
-                            </div>
-                          </div>
-                        </div>
+                    {/* Hemoglobin Field */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="hemoglobin-field"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
                       </div>
-                    ))}
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>Number</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('hemoglobin'))?.value?.toString() || "13.5"}
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
 
-                    {detectedDeficiencies.length > 2 && (
-                      <div className="text-center text-sm text-gray-500 py-2">
-                        ... and {detectedDeficiencies.length - 2} more deficiency records
+                    {/* Vitamin B9 Field */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="vitamin-B9-field"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
                       </div>
-                    )}
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>Number</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('folate'))?.value?.toString() || "8.5"}
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Vitamin D Field */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Field Name</label>
+                        <input
+                          type="text"
+                          value="vitamin-D-field"
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                        <select disabled className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50">
+                          <option>Number</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
+                        <input
+                          type="text"
+                          value={pdfParseResult?.biomarkers?.find(b => b.name.toLowerCase().includes('vitamin d'))?.value?.toString() || "25"}
+                          readOnly
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1177,16 +1162,11 @@ export default function Upload({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
-                  <span>View All My Discounts</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
                 <button
                   onClick={() => {
                     setUploadStep('upload');
                     setUploadedFile(null);
                     setDetectedDeficiencies([]);
-                    setPersonalizedDiscounts([]);
                     setShowCredentialSection(false);
                     setIsIssuanceSuccess(false);
                     setIssuanceError(null);

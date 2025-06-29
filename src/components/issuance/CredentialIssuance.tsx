@@ -160,6 +160,8 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
         credentialSubject: credentialSubject,
       };
 
+      console.log("Claim request:", claimRequest);
+
       const rp = await airService?.goToPartner(environmentConfig.widgetUrl).catch((err) => {
         console.error("Error getting URL with token:", err);
       });

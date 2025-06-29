@@ -1,8 +1,163 @@
-import React, { useState } from 'react';
-import { Gift, Clock, Star, CheckCircle, Filter, Search } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Gift, Clock, Star, CheckCircle, Filter, Search, Shield, AlertTriangle, Award, ArrowRight } from 'lucide-react';
+import { AirCredentialWidget, type QueryRequest, type VerificationResults, type Language } from "@mocanetwork/air-credential-sdk";
+import "@mocanetwork/air-credential-sdk/dist/style.css";
+import { type AirService, BUILD_ENV } from "@mocanetwork/airkit";
+import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
+import type { EnvironmentConfig } from "../config/environments";
 
-export default function Discounts() {
+interface DiscountsProps {
+  airService?: AirService | null;
+  isLoggedIn?: boolean;
+  airKitBuildEnv?: BUILD_ENV_TYPE;
+  partnerId?: string;
+  environmentConfig?: EnvironmentConfig;
+}
+
+const getVerifierAuthToken = async (verifierDid: string, apiKey: string, apiUrl: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${apiUrl}/verifier/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "*/*",
+        "X-Test": "true",
+      },
+      body: JSON.stringify({
+        verifierDid: verifierDid,
+        authToken: apiKey,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API call failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.code === 80000000 && data.data && data.data.token) {
+      return data.data.token;
+    } else {
+      console.error("Failed to get verifier auth token from API:", data.msg || "Unknown error");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching verifier auth token:", error);
+    return null;
+  }
+};
+
+export default function Discounts({
+  airService = null,
+  isLoggedIn = false,
+  airKitBuildEnv = BUILD_ENV.SANDBOX,
+  partnerId = "",
+  environmentConfig = {
+    apiUrl: "https://api-sandbox.airprotocol.com",
+    widgetUrl: "https://widget-sandbox.airprotocol.com"
+  }
+}: DiscountsProps = {}) {
   const [activeTab, setActiveTab] = useState<'available' | 'used' | 'expired'>('available');
+  
+  // Verification states
+  const [isVerified, setIsVerified] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<VerificationResults | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const widgetRef = useRef<AirCredentialWidget | null>(null);
+  
+  // Configuration for verification
+  const [config] = useState({
+    apiKey: import.meta.env.VITE_VERIFIER_API_KEY || "your-verifier-api-key",
+    verifierDid: import.meta.env.VITE_VERIFIER_DID || "did:example:verifier123",
+    programId: import.meta.env.VITE_PROGRAM_ID || "c21hc030kb5iu0030224Qs",
+     });
+
+  // Verification logic
+  const generateWidget = async () => {
+    try {
+      const fetchedVerifierAuthToken = await getVerifierAuthToken(config.verifierDid, config.apiKey, environmentConfig.apiUrl);
+
+      if (!fetchedVerifierAuthToken) {
+        setVerificationError("Failed to fetch verifier authentication token. Please check your API Key.");
+        setIsVerifying(false);
+        return;
+      }
+
+      const queryRequest: QueryRequest = {
+        process: "Verify",
+        verifierAuth: fetchedVerifierAuthToken,
+        programId: config.programId,
+      };
+
+      const rp = await airService?.goToPartner(environmentConfig.widgetUrl).catch((err) => {
+        console.error("Error getting URL with token:", err);
+      });
+
+      if (!rp?.urlWithToken) {
+        console.warn("Failed to get URL with token. Please check your partner ID.");
+        setVerificationError("Failed to get URL with token. Please check your partner ID.");
+        setIsVerifying(false);
+        return;
+      }
+
+      widgetRef.current = new AirCredentialWidget(queryRequest, partnerId, {
+        endpoint: rp?.urlWithToken,
+        airKitBuildEnv: airKitBuildEnv || BUILD_ENV.STAGING,
+        theme: "light",
+        locale: "en" as Language,
+      });
+
+      widgetRef.current.on("verifyCompleted", (results: VerificationResults) => {
+        setVerificationResult(results);
+        setIsVerifying(false);
+        
+        // Check if verification was successful
+        if (results.status === "Compliant") {
+          setIsVerified(true);
+        } else {
+          setVerificationError(`Verification failed: ${results.status}`);
+        }
+        console.log("Verification completed:", results);
+      });
+
+      widgetRef.current.on("close", () => {
+        setIsVerifying(false);
+        console.log("Widget closed");
+      });
+    } catch (err) {
+      setVerificationError(err instanceof Error ? err.message : "Failed to create widget");
+      setIsVerifying(false);
+    }
+  };
+
+  const handleVerifyCredential = async () => {
+    setIsVerifying(true);
+    setVerificationError(null);
+    setVerificationResult(null);
+
+    try {
+      if (!widgetRef.current) {
+        await generateWidget();
+      }
+
+      if (widgetRef.current) {
+        widgetRef.current.launch();
+      }
+    } catch (err) {
+      setVerificationError(err instanceof Error ? err.message : "An error occurred");
+      setIsVerifying(false);
+    }
+  };
+
+  // Clean up widget on unmount
+  useEffect(() => {
+    return () => {
+      if (widgetRef.current) {
+        widgetRef.current.destroy();
+      }
+    };
+  }, []);
 
   const discounts = {
     available: [
@@ -93,12 +248,147 @@ export default function Discounts() {
     { label: 'Used This Month', value: '2', color: 'text-purple-600' },
   ];
 
+  // If not verified, show verification flow
+  if (!isVerified) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="bg-blue-100 p-4 rounded-full">
+              <Shield className="h-12 w-12 text-blue-600" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Verify Your Health Credential</h1>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            To access personalized discounts, please verify your health credential first. This ensures you receive 
+            supplements tailored to your specific health needs.
+          </p>
+        </div>
+
+        {/* Verification Card */}
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="text-center mb-6">
+              <Award className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Health Credential Verification</h2>
+              <p className="text-gray-600">
+                Verify your digital health credential to unlock personalized supplement discounts
+              </p>
+            </div>
+
+            {/* Verification Status Messages */}
+            {verificationError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
+                  <p className="text-red-800 text-sm">{verificationError}</p>
+                </div>
+              </div>
+            )}
+
+            {verificationResult && verificationResult.status !== "Compliant" && (
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <div>
+                    <p className="text-yellow-800 text-sm font-medium">Verification Status: {verificationResult.status}</p>
+                    <p className="text-yellow-700 text-sm mt-1">
+                      Your credential verification was not successful. Please ensure you have a valid health credential and try again.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Benefits of Verification */}
+            <div className="bg-blue-50 rounded-lg p-6 mb-6">
+              <h3 className="font-semibold text-blue-900 mb-3">What you'll get after verification:</h3>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <span className="text-blue-800 text-sm">Personalized supplement recommendations</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <span className="text-blue-800 text-sm">Exclusive discounts up to 40% OFF</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <span className="text-blue-800 text-sm">Health-based product matching</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <span className="text-blue-800 text-sm">Priority access to new products</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Verification Button */}
+            <button
+              onClick={handleVerifyCredential}
+              disabled={isVerifying || !isLoggedIn}
+              className="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-3"
+            >
+              {isVerifying ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Verifying Credential...</span>
+                </>
+              ) : (
+                <>
+                  <Shield className="h-5 w-5" />
+                  <span>Verify My Health Credential</span>
+                </>
+              )}
+            </button>
+
+            {!isLoggedIn && (
+              <p className="text-sm text-gray-500 mt-3 text-center">
+                Please connect your wallet to verify credentials
+              </p>
+            )}
+
+            {/* Instructions */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">How it works:</h4>
+              <ol className="text-sm text-gray-600 space-y-1">
+                <li>1. Click "Verify My Health Credential" above</li>
+                <li>2. Present your digital health credential</li>
+                <li>3. Once verified, access your personalized discounts</li>
+              </ol>
+            </div>
+          </div>
+
+          {/* Alternative Actions */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-600 mb-4">Don't have a health credential yet?</p>
+            <a
+              href="/upload"
+              className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              <span>Upload health records to create one</span>
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If verified, show discounts
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
+      {/* Verified Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Discounts</h1>
-        <p className="text-gray-600">Personalized supplement deals based on your health profile</p>
+        <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center space-x-3 bg-green-50 px-4 py-2 rounded-full border border-green-200">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <span className="text-green-800 font-medium text-sm">Credential Verified</span>
+          </div>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">My Personalized Discounts</h1>
+        <p className="text-gray-600 text-center">Supplement deals based on your verified health profile</p>
       </div>
 
       {/* Stats Cards */}
