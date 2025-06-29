@@ -32,8 +32,6 @@ interface Deficiency {
   severity: 'mild' | 'moderate' | 'severe';
 }
 
-
-
 interface UploadProps {
   airService?: AirService | null;
   isLoggedIn?: boolean;
@@ -502,8 +500,8 @@ export default function Upload({
   // Convert deficiencies to credential subject using exact medical schema
   const convertDeficienciesToCredentialSubject = (): JsonDocumentObject => {
     // Extract demographic data from PDF if available
-    const age = Math.floor(pdfParseResult?.demographics?.age || 35);
-    const gender = pdfParseResult?.demographics?.gender === 'Male' ? 1 : 2; // 1 = Male, 2 = Female
+    const age = Math.floor(pdfParseResult?.demographics?.age || 55);
+    const gender = pdfParseResult?.demographics?.gender === 'Male' ? 2 : 1; // 1 = Male, 2 = Female
 
     // Extract biomarker values from parsed data or use default values
     const getVitaminValue = (vitaminName: string, defaultValue: number): number => {
@@ -525,7 +523,6 @@ export default function Upload({
       "vitamin-D-field": getVitaminValue('vitamin D', 25), // number
       "date-creation-field": "2025-06-29" // string - test with specific date format
     };
-    
 
     console.log("Subject:", subject);
     return subject;
@@ -867,7 +864,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={Math.floor(pdfParseResult?.demographics?.age || 35).toString()}
+                          value={Math.floor(pdfParseResult?.demographics?.age || 55).toString()}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
@@ -895,7 +892,7 @@ export default function Upload({
                         <label className="block text-xs font-medium text-gray-700 mb-1">Value</label>
                         <input
                           type="text"
-                          value={pdfParseResult?.demographics?.gender === 'Male' ? "1" : "2"}
+                          value={pdfParseResult?.demographics?.gender === 'Male' ? "2" : "1"}
                           readOnly
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded bg-gray-50"
                         />
