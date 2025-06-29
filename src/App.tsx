@@ -117,32 +117,24 @@ function AppRoutes({
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-8 w-full sm:w-auto">
               <nav className="flex flex-row space-x-2 sm:space-x-4 w-full sm:w-auto overflow-x-auto">
-                <a
-                  href="/home"
+                <Link
+                  to="/home"
                   className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
                 >
                   Home
-                </a>
-                <a
-                  href="/upload"
+                </Link>
+                <Link
+                  to="/upload"
                   className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
                 >
                   Upload
-                </a>
-                <a
-                  href="/discounts"
+                </Link>
+                <Link
+                  to="/discounts"
                   className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
                 >
                   Discounts
-                </a>
-
-                {/* <a
-                  href="/pharmacy"
-                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                >
-                  Pharmacy
-                </a> */}
-
+                </Link>
               </nav>
               <div className="w-full sm:w-auto">
                 <NavBarLogin
@@ -232,18 +224,18 @@ function AppRoutes({
           <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
             {/* Developer Links */}
             <div className="flex items-center space-x-4">
-              <a
-                href="/issue"
+              <Link
+                to="/issue"
                 className="px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               >
                 Credential Issuance
-              </a>
-              <a
-                href="/verify"
+              </Link>
+              <Link
+                to="/verify"
                 className="px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               >
                 Credential Verification
-              </a>
+              </Link>
             </div>
             
             {/* Powered by text */}
