@@ -145,28 +145,13 @@ function AppRoutes({
                 >
                   Upload
                 </a>
-                <a
+                {/* <a
                   href="/pharmacy"
                   className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
                 >
                   Pharmacy
-                </a>
-                <a
-                  href="/issue"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                >
-                  Issuance
-                </a>
-                <a
-                  href="/verify"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                >
-                  Verification
-                </a>
+                </a> */}
+
               </nav>
               <div className="w-full sm:w-auto">
                 <NavBarLogin
@@ -253,7 +238,26 @@ function AppRoutes({
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200">
         <div className="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
-          <p className="text-center text-gray-500 text-xs sm:text-sm">Powered by AIR Credential SDK</p>
+          <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+            {/* Developer Links */}
+            <div className="flex items-center space-x-4">
+              <a
+                href="/issue"
+                className="px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              >
+                Credential Issuance
+              </a>
+              <a
+                href="/verify"
+                className="px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              >
+                Credential Verification
+              </a>
+            </div>
+            
+            {/* Powered by text */}
+            <p className="text-center text-gray-500 text-xs sm:text-sm">Powered by AIR Credential SDK</p>
+          </div>
         </div>
       </footer>
     </div>
