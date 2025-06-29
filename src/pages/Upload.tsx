@@ -663,10 +663,10 @@ export default function Upload({
                     className="hidden"
                     id="file-upload"
                   />
-                  <div className="flex flex-col sm:flex-row gap-3 items-center">
+                  <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
                     <label
                       htmlFor="file-upload"
-                      className="bg-blue-600 text-white px-6 py-1 rounded-lg font-medium hover:bg-blue-700 cursor-pointer inline-block transition-colors"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 cursor-pointer inline-block transition-colors"
                     >
                       Choose File
                     </label>
