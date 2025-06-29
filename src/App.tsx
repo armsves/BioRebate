@@ -78,7 +78,7 @@ function AppRoutes({
   return (
     <div
       className={
-        "min-h-screen " +
+        "min-h-screen flex flex-col " +
         (location.pathname.startsWith("/issue")
           ? "bg-gradient-to-br from-blue-50 to-brand-100"
           : location.pathname.startsWith("/verify")
@@ -224,7 +224,7 @@ function AppRoutes({
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200">
+      <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-4 py-2 sm:py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
             {/* Developer Links */}

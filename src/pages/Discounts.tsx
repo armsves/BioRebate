@@ -58,20 +58,20 @@ export default function Discounts({
     widgetUrl: "https://widget-sandbox.airprotocol.com"
   }
 }: DiscountsProps = {}) {
-  
+
   // Verification states
   const [isVerified, setIsVerified] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResults | null>(null);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const widgetRef = useRef<AirCredentialWidget | null>(null);
-  
+
   // Configuration for verification
   const [config] = useState({
     apiKey: import.meta.env.VITE_VERIFIER_API_KEY || "your-verifier-api-key",
     verifierDid: import.meta.env.VITE_VERIFIER_DID || "did:example:verifier123",
     programId: import.meta.env.VITE_PROGRAM_ID || "c21hc030kb5iu0030224Qs",
-     });
+  });
 
   // Verification logic
   const generateWidget = async () => {
@@ -111,7 +111,7 @@ export default function Discounts({
       widgetRef.current.on("verifyCompleted", (results: VerificationResults) => {
         setVerificationResult(results);
         setIsVerifying(false);
-        
+
         // Check if verification was successful
         if (results.status === "Compliant") {
           setIsVerified(true);
@@ -251,27 +251,23 @@ export default function Discounts({
   // If not verified, show verification flow
   if (!isVerified) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-blue-100 p-4 rounded-full">
-              <Shield className="h-12 w-12 text-blue-600" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Verify Your Health Credential</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            To access personalized discounts, please verify your health credential first. This ensures you receive 
-            supplements tailored to your specific health needs.
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
+            <Shield className="h-8 w-8 text-blue-600" />
+            Verify Your Health Credential
+          </h1>
         </div>
 
         {/* Verification Card */}
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
             <div className="text-center mb-6">
-              <Award className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Health Credential Verification</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                <Award className="h-8 w-8 text-blue-500" />
+                Health Credential Verification
+              </h2>
               <p className="text-gray-600">
                 Verify your digital health credential to unlock personalized supplement discounts
               </p>
@@ -325,29 +321,32 @@ export default function Discounts({
             </div>
 
             {/* Verification Button */}
-            <button
-              onClick={handleVerifyCredential}
-              disabled={isVerifying || !isLoggedIn}
-              className="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-3"
-            >
-              {isVerifying ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Verifying Credential...</span>
-                </>
-              ) : (
-                <>
-                  <Shield className="h-5 w-5" />
-                  <span>Verify My Health Credential</span>
-                </>
+            <div className="relative group">
+              <button
+                onClick={handleVerifyCredential}
+                disabled={isVerifying || !isLoggedIn}
+                className="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-3"
+              >
+                {isVerifying ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Verifying Credential...</span>
+                  </>
+                ) : (
+                  <>
+                    <Shield className="h-5 w-5" />
+                    <span>Verify My Health Credential</span>
+                  </>
+                )}
+              </button>
+              {/* Tooltip for disabled state */}
+              {!isLoggedIn && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                  Please connect your wallet to verify credentials
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                </div>
               )}
-            </button>
-
-            {!isLoggedIn && (
-              <p className="text-sm text-gray-500 mt-3 text-center">
-                Please connect your wallet to verify credentials
-              </p>
-            )}
+            </div>
 
             {/* Instructions */}
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
@@ -448,52 +447,52 @@ export default function Discounts({
         {/* Available Discounts Tab Content */}
         <TabsContent value="available" className="space-y-4">
           {discounts.available.map((discount) => (
-              <div key={discount.id} className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                  <div className="flex items-start space-x-4 mb-4 lg:mb-0">
-                    <img
-                      src={discount.image}
-                      alt={discount.title}
-                      className="w-16 h-16 rounded-lg object-cover"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                          -{discount.discount}
-                        </span>
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                          {discount.category}
-                        </span>
+            <div key={discount.id} className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-start space-x-4 mb-4 lg:mb-0">
+                  <img
+                    src={discount.image}
+                    alt={discount.title}
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                        -{discount.discount}
+                      </span>
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                        {discount.category}
+                      </span>
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-1">{discount.title}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{discount.brand}</p>
+                    <p className="text-sm text-blue-600 mb-2">{discount.reason}</p>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                        <span className="text-sm text-gray-600 ml-1">{discount.rating}</span>
                       </div>
-                      <h3 className="font-semibold text-gray-900 mb-1">{discount.title}</h3>
-                      <p className="text-sm text-gray-600 mb-2">{discount.brand}</p>
-                      <p className="text-sm text-blue-600 mb-2">{discount.reason}</p>
-                      <div className="flex items-center space-x-2">
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span className="text-sm text-gray-600 ml-1">{discount.rating}</span>
-                        </div>
-                        <span className="text-gray-300">•</span>
-                        <div className="flex items-center text-orange-600">
-                          <Clock className="h-4 w-4 mr-1" />
-                          <span className="text-sm">Expires in {discount.expiresIn}</span>
-                        </div>
+                      <span className="text-gray-300">•</span>
+                      <div className="flex items-center text-orange-600">
+                        <Clock className="h-4 w-4 mr-1" />
+                        <span className="text-sm">Expires in {discount.expiresIn}</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">${discount.discountPrice}</div>
-                      <div className="text-sm text-gray-400 line-through">${discount.originalPrice}</div>
-                    </div>
-                    <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                      Claim Now
-                    </button>
                   </div>
                 </div>
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600">${discount.discountPrice}</div>
+                    <div className="text-sm text-gray-400 line-through">${discount.originalPrice}</div>
+                  </div>
+                  <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                    Claim Now
+                  </button>
+                </div>
               </div>
-            ))}
-          
+            </div>
+          ))}
+
           {/* Empty State for Available */}
           {discounts.available.length === 0 && (
             <div className="text-center py-12">
@@ -507,7 +506,7 @@ export default function Discounts({
               <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
                 Upload Health Records
               </button>
-            </div>
+              </div>
           )}
         </TabsContent>
 
@@ -530,9 +529,9 @@ export default function Discounts({
                   <div className="text-sm text-green-600">Saved {discount.discount}</div>
                 </div>
               </div>
-                          </div>
-            ))}
-          
+            </div>
+          ))}
+
           {/* Empty State for Used */}
           {discounts.used.length === 0 && (
             <div className="text-center py-12">
@@ -568,7 +567,7 @@ export default function Discounts({
               </div>
             </div>
           ))}
-          
+
           {/* Empty State for Expired */}
           {discounts.expired.length === 0 && (
             <div className="text-center py-12">
@@ -587,4 +586,3 @@ export default function Discounts({
   );
 }
 
- 

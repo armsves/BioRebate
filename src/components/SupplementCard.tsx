@@ -29,12 +29,12 @@ export default function SupplementCard({
 }: SupplementCardProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden group">
-      <div className="relative flex justify-center items-center py-10">
+      <div className="relative">
         <img
-                  src={imageUrl}
-                  alt={name}
-                  className="w-[200px] h-[200px] object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+          src={imageUrl}
+          alt={name}
+          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+        />
         <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-lg text-sm font-bold">
           -{discountPercentage}%
         </div>

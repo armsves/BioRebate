@@ -1,13 +1,14 @@
-import React from 'react';
+//import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import SupplementCard from '../components/SupplementCard';
-import { Search, Filter, TrendingUp, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
-import { useProducts } from '../hooks/useProducts';
+//import SupplementCard from '../components/SupplementCard';
+//import { Search, Filter, TrendingUp, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+//import { useProducts } from '../hooks/useProducts';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { supplements, loading, error, refetch } = useProducts();
+  //const { supplements, loading, error, refetch } = useProducts();
 
+  /*
   const categories = [
     'Protein & Fitness',
     'Vitamins & Minerals',
@@ -15,7 +16,7 @@ export default function Home() {
     'Beauty & Anti-aging',
     'Sports Nutrition',
     'Herbal Supplements',
-  ];
+  ];*/
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -43,7 +44,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Search and Filter Bar */}
+      {/* Search and Filter Bar 
       <div className="flex flex-col lg:flex-row gap-4 mb-8">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -68,7 +69,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Categories */}
+      {/* Categories 
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Shop by Category</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -83,12 +84,12 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Trending Section */}
+      {/* Trending Section 
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <TrendingUp className="h-6 w-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Trending Deals</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Latest Products</h2>
           </div>
           {error && (
             <button
@@ -101,7 +102,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Loading State */}
+        {/* Loading State 
         {loading && (
           <div className="flex items-center justify-center py-12">
             <div className="flex items-center space-x-3">
@@ -110,8 +111,9 @@ export default function Home() {
             </div>
           </div>
         )}
+          
 
-        {/* Error State */}
+        {/* Error State 
         {error && !loading && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
@@ -128,7 +130,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Products Grid */}
+        {/* Products Grid
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {supplements.map((supplement) => (
@@ -137,7 +139,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty State 
         {!loading && !error && supplements.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-500">
@@ -148,7 +150,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* Stats Section */}
+      {/* Stats Section 
       <div className="bg-white rounded-2xl p-8 border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>
@@ -164,7 +166,7 @@ export default function Home() {
             <div className="text-gray-600">Average Savings</div>
           </div>
         </div>
-      </div>
+      </div>*/}
     </div>
   );
 } 
