@@ -525,6 +525,7 @@ export default function Upload({
       "vitamin-D-field": getVitaminValue('vitamin D', 25), // number
       "date-creation-field": "2025-06-29" // string - test with specific date format
     };
+    
 
     console.log("Subject:", subject);
     return subject;
