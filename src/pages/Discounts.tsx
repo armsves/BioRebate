@@ -345,7 +345,7 @@ export default function Discounts({
                 </div>
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="h-5 w-5 text-blue-600" />
-                  <span className="text-blue-800 text-sm">Exclusive discounts up to 40% OFF</span>
+                  <span className="text-blue-800 text-sm">Exclusive discounts up to 60% OFF</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="h-5 w-5 text-blue-600" />
