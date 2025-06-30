@@ -1,5 +1,6 @@
 //import React from 'react';
 import { Star, Clock, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface SupplementCardProps {
   id: string;
@@ -27,13 +28,19 @@ export default function SupplementCard({
   timeLeft,
   soldCount,
 }: SupplementCardProps) {
+  const navigate = useNavigate();
+
+  const handleClaimDeal = () => {
+    navigate('/upload');
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-100 overflow-hidden group">
       <div className="relative">
         <img
           src={imageUrl}
           alt={name}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-50 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-lg text-sm font-bold">
           -{discountPercentage}%
@@ -75,10 +82,13 @@ export default function SupplementCard({
           </div>
         </div>
 
-        <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+        <button
+          onClick={handleClaimDeal}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+        >
           Claim Deal
         </button>
       </div>
     </div>
   );
-} 
+}

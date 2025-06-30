@@ -30,7 +30,11 @@ const ENV_OPTIONS = [
 const FlowTitle = () => {
   return (
     <Link to="/home" className="text-blue-600 hover:text-blue-700 transition-colors">
-      Bio<b>Rebate</b>
+      <img
+        src="/BioRebate.png"
+        alt="BioRebate"
+        className="h-24 w-auto"
+      />
     </Link>
   );
 };
@@ -87,20 +91,20 @@ function AppRoutes({
         (location.pathname.startsWith("/issue")
           ? "bg-gradient-to-br from-blue-50 to-brand-100"
           : location.pathname.startsWith("/verify")
-          ? "bg-gradient-to-br from-verify-50 to-verify-200"
-          : location.pathname === "/home"
-          ? "bg-gradient-to-br from-blue-50 to-blue-100"
-          : location.pathname === "/discounts"
-          ? "bg-gradient-to-br from-green-50 to-green-100"
-          : location.pathname === "/upload"
-          ? "bg-gradient-to-br from-purple-50 to-purple-100"
-          : location.pathname === "/success"
-          ? "bg-gradient-to-br from-green-50 to-green-100"
-          : location.pathname === "/cancel"
-          ? "bg-gradient-to-br from-orange-50 to-orange-100"
-          : location.pathname === "/pharmacy"
-          ? "bg-gradient-to-br from-orange-50 to-orange-100"
-          : "bg-gradient-to-br from-gray-50 to-gray-200")
+            ? "bg-gradient-to-br from-verify-50 to-verify-200"
+            : location.pathname === "/home"
+              ? "bg-gradient-to-br from-blue-50 to-blue-100"
+              : location.pathname === "/discounts"
+                ? "bg-gradient-to-br from-green-50 to-green-100"
+                : location.pathname === "/upload"
+                  ? "bg-gradient-to-br from-purple-50 to-purple-100"
+                  : location.pathname === "/success"
+                    ? "bg-gradient-to-br from-green-50 to-green-100"
+                    : location.pathname === "/cancel"
+                      ? "bg-gradient-to-br from-orange-50 to-orange-100"
+                      : location.pathname === "/pharmacy"
+                        ? "bg-gradient-to-br from-orange-50 to-orange-100"
+                        : "bg-gradient-to-br from-gray-50 to-gray-200")
       }
     >
       {/* Header */}
@@ -117,12 +121,12 @@ function AppRoutes({
                   type="text"
                   value={partnerId}
                   onChange={(e) => setPartnerId(e.target.value)}
-                  className="text-xs font-mono text-brand-700 bg-brand-50 px-2 py-1 rounded border border-transparent focus:border-brand-300 focus:outline-none focus:ring-1 focus:ring-brand-300 min-w-[200px]"
+                  className="text-xs font-mono text-brand-700 bg-brand-50 px-2 py-1 rounded border border-transparent focus:border-brand-300 focus:outline-none focus:ring-1 focus:ring-brand-300 min-w-[260px]"
                   placeholder="Enter Partner ID"
                 />
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-8 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-8 w-full sm:w-auto px-4">
               <nav className="flex flex-row space-x-2 sm:space-x-4 w-full sm:w-auto overflow-x-auto">
                 <Link
                   to="/home"
@@ -136,13 +140,12 @@ function AppRoutes({
                 >
                   Upload
                 </Link>
-                                  <Link
-                    to="/discounts"
-                    className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                  >
-                    Discounts
-                  </Link>
-
+                <Link
+                  to="/discounts"
+                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                >
+                  Discounts
+                </Link>
               </nav>
               <div className="w-full sm:w-auto">
                 <NavBarLogin
@@ -170,29 +173,29 @@ function AppRoutes({
 
           {/* BioRebate Pages */}
           <Route path="/home" element={<Home />} />
-          <Route 
-            path="/discounts" 
+          <Route
+            path="/discounts"
             element={
-              <Discounts 
+              <Discounts
                 airService={airService}
                 isLoggedIn={isLoggedIn}
                 airKitBuildEnv={currentEnv}
                 partnerId={partnerId}
                 environmentConfig={environmentConfig}
               />
-            } 
+            }
           />
-          <Route 
-            path="/upload" 
+          <Route
+            path="/upload"
             element={
-              <Upload 
+              <Upload
                 airService={airService}
                 isLoggedIn={isLoggedIn}
                 airKitBuildEnv={currentEnv}
                 partnerId={partnerId}
                 environmentConfig={environmentConfig}
               />
-            } 
+            }
           />
 
           <Route path="/success" element={<Success />} />
@@ -248,7 +251,7 @@ function AppRoutes({
                 Credential Verification
               </Link>
             </div>
-            
+
             {/* Powered by text */}
             <p className="text-center text-gray-500 text-xs sm:text-sm">Powered by AIR Credential SDK</p>
           </div>
