@@ -679,7 +679,7 @@ export default function Upload({
                         setUploadedFile(mockFile);
                         handleFileUpload(mockFile);
                       }}
-                      className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+                      className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
                     >
                       Try Demo
                     </button>
@@ -806,21 +806,37 @@ export default function Upload({
                   <h3 className="text-lg font-semibold text-gray-900">Detected Deficiencies</h3>
                 </div>
                 <div className="space-y-3">
-                  {detectedDeficiencies.map((deficiency, index) => (
-                    <div key={index} className={`p-3 rounded-lg border ${getSeverityColor(deficiency.severity)}`}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium">{deficiency.name}</div>
-                          <div className="text-sm opacity-75">
-                            Current: {deficiency.value} | Normal: {deficiency.normalRange}
+                  {/* Use PDF biomarkers if available, otherwise fall back to detectedDeficiencies */}
+                  {(pdfParseResult && pdfParseResult.success && pdfParseResult.biomarkers.length > 0 
+                    ? pdfParseResult.biomarkers.filter(biomarker => biomarker.isDeficient)
+                    : detectedDeficiencies
+                  ).map((item, index) => {
+                    // Handle both ExtractedBiomarker and Deficiency types
+                    const isExtractedBiomarker = 'unit' in item;
+                    const name = isExtractedBiomarker ? item.name : item.name;
+                    const value = isExtractedBiomarker ? `${item.value} ${item.unit}` : item.value;
+                    const normalRange = isExtractedBiomarker ? item.normalRange : item.normalRange;
+                    const severity = isExtractedBiomarker ? item.severity : item.severity;
+                    const level = isExtractedBiomarker 
+                      ? (item.severity === 'severe' ? 'Very Low' : item.severity === 'moderate' ? 'Low' : 'Borderline')
+                      : item.level;
+
+                    return (
+                      <div key={index} className={`p-3 rounded-lg border ${getSeverityColor(severity)}`}>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">{name}</div>
+                            <div className="text-sm opacity-75">
+                              Current: {value} | Normal: {normalRange}
+                            </div>
                           </div>
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-white bg-opacity-50">
+                            {level}
+                          </span>
                         </div>
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-white bg-opacity-50">
-                          {deficiency.level}
-                        </span>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
