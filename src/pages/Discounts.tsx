@@ -297,7 +297,7 @@ export default function Discounts({
   // If not verified, show verification flow
   if (!isVerified) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         {/* Verification Card */}
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
@@ -363,7 +363,7 @@ export default function Discounts({
               <button
                 onClick={handleVerifyCredential}
                 disabled={isVerifying || !isLoggedIn}
-                className="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-3"
+                className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-3"
               >
                 {isVerifying ? (
                   <>
@@ -387,7 +387,7 @@ export default function Discounts({
             </div>
 
             {/* Instructions */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <div className="mt-2 p-4 bg-gray-50 rounded-lg">
               <h4 className="text-sm font-medium text-gray-900 mb-2">How it works:</h4>
               <ol className="text-sm text-gray-600 space-y-1">
                 <li>1. Click "Verify My Health Credential" above</li>
@@ -398,7 +398,7 @@ export default function Discounts({
           </div>
 
           {/* Alternative Actions */}
-          <div className="mt-8 text-center">
+          <div className="mt-2 text-center">
             <p className="text-gray-600 mb-4">Don't have a health credential yet?</p>
             <a
               href="/upload"
@@ -415,7 +415,7 @@ export default function Discounts({
 
   // If verified, show discounts
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       {/* Verified Header */}
       <div className="mb-8">
         <div className="flex items-center justify-center mb-4">
@@ -429,7 +429,7 @@ export default function Discounts({
       </div>
 
       {/* Stats and Cart Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-2">
         {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-xl p-6 border border-gray-200">
             <div className="flex items-center justify-between">
@@ -560,7 +560,7 @@ export default function Discounts({
 
           {/* Empty State for Available */}
           {discounts.available.length === 0 && (
-            <div className="text-center py-12">
+            <div className="text-center py-4">
               <Gift className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 No available discounts
@@ -654,7 +654,7 @@ export default function Discounts({
 
         {/* Cart Section */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-8">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-2 sticky top-8">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
               <ShoppingCart className="h-5 w-5" />
               <span>Cart ({cartItemCount})</span>
