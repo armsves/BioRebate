@@ -189,18 +189,10 @@ const Success = () => {
               <span>Back to Home</span>
             </Link>
           </div>
-
-          <Link
-                          to="/discounts"
-            className="inline-flex items-center justify-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-                          <span>Browse More Discounts</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
         </div>
 
         {/* Support Info */}
-        <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="mt-8 pt-6 border-gray-200">
           <p className="text-sm text-gray-600">
             Need help with your order? Contact our support team at{' '}
             <a href="mailto:support@biorebate.com" className="text-blue-600 hover:text-blue-700">

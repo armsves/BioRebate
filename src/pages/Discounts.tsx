@@ -298,14 +298,6 @@ export default function Discounts({
   if (!isVerified) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-3">
-            <Shield className="h-8 w-8 text-blue-600" />
-            Verify Your Health Credential
-          </h1>
-        </div>
-
         {/* Verification Card */}
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
@@ -315,7 +307,7 @@ export default function Discounts({
                 Health Credential Verification
               </h2>
               <p className="text-gray-600">
-                Verify your digital health credential to unlock personalized supplement discounts
+                Verify your digital health credential to unlock personalized discounts
               </p>
             </div>
 
