@@ -123,26 +123,37 @@ function AppRoutes({
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-8 w-full sm:w-auto">
-              <nav className="flex flex-row space-x-2 sm:space-x-4 w-full sm:w-auto overflow-x-auto">
+              <nav className="flex flex-row space-x-2 sm:space-x-4 w-full sm:w-auto overflow-x-auto p-1">
                 <Link
                   to="/home"
-                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                  className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all text-center whitespace-nowrap ${
+                    location.pathname === "/home"
+                      ? "text-blue-700 bg-blue-50 ring-2 ring-blue-300 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
                   Home
                 </Link>
                 <Link
                   to="/upload"
-                  className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
+                  className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all text-center whitespace-nowrap ${
+                    location.pathname === "/upload"
+                      ? "text-purple-700 bg-purple-50 ring-2 ring-purple-300 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
                   Upload
                 </Link>
-                                  <Link
-                    to="/discounts"
-                    className="flex-1 sm:flex-none px-2 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center whitespace-nowrap"
-                  >
-                    Discounts
-                  </Link>
-
+                <Link
+                  to="/discounts"
+                  className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-all text-center whitespace-nowrap ${
+                    location.pathname === "/discounts"
+                      ? "text-green-700 bg-green-50 ring-2 ring-green-300 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  Discounts
+                </Link>
               </nav>
               <div className="w-full sm:w-auto">
                 <NavBarLogin
